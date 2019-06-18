@@ -112,3 +112,6 @@ retro
 
 # roms
 *.nes
+
+# pickle files
+*.pkl
