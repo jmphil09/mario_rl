@@ -9,6 +9,10 @@ env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
 
 imgarray = []
 
+SHOW_GAME = True
+SHOW_NN_VIEW = False
+assert not (SHOW_GAME and SHOW_NN_VIEW)
+
 
 def eval_genomes(genomes, config):
 
@@ -31,15 +35,31 @@ def eval_genomes(genomes, config):
 
         done = False
 
+        #SHOW NN
+        if SHOW_NN_VIEW:
+            cv2.namedWindow("main", cv2.WINDOW_NORMAL)
+
         while not done:
 
-            env.render()
+            if SHOW_GAME:
+                env.render()
             frame += 1
+
+            #SHOW NN
+            if SHOW_NN_VIEW:
+                scaledimg = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
+                #scaledimg = cv2.cvtColor(obs, cv2.COLOR_BGR2RGB)
+                scaledimg = cv2.resize(scaledimg, (input_x, input_y))
 
             #print('obs.shape: {}'.format(obs.shape))
             obs = cv2.resize(obs, (input_x, input_y))
             obs = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
             obs = np.reshape(obs, (input_x, input_y))
+
+            #SHOW NN
+            if SHOW_NN_VIEW:
+                cv2.imshow('main', scaledimg)
+                cv2.waitKey(1)
 
             #Reshape input to a 1-d list. If using keras or tf, you can
             #just use a convolution nn command
@@ -54,6 +74,8 @@ def eval_genomes(genomes, config):
 
             obs, reward, done, info = env.step(nn_output)
 
+            #fitness_current += reward
+
             imgarray.clear()
 
             #x_position = info['x']
@@ -61,6 +83,10 @@ def eval_genomes(genomes, config):
             if x_position > x_position_max:
                 fitness_current += 1 #get a reward for moving to the right
                 x_position_max = x_position
+
+            if x_position > 100:
+                fitness_current += 100000
+                done = True
 
             if fitness_current > current_max_fitness:
                 current_max_fitness = fitness_current
@@ -87,4 +113,13 @@ config = neat.Config(
 
 p = neat.Population(config)
 
+#reporting statistics
+p.add_reporter(neat.StdOutReporter(True))
+stats = neat.StatisticsReporter()
+p.add_reporter(stats)
+p.add_reporter(neat.Checkpointer(10))
+
 winner = p.run(eval_genomes)
+
+with open('winner.pkl', 'wb') as output:
+    pickle.dump(winner, output, 1)
