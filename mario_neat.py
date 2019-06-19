@@ -9,8 +9,11 @@ env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
 
 imgarray = []
 
+#Render the game as the NN is working
 SHOW_GAME = True
+#Render what the NN sees as it is working (scaled down and gray images)
 SHOW_NN_VIEW = False
+#TODO: see if both can be rendered without crashing
 assert not (SHOW_GAME and SHOW_NN_VIEW)
 
 
@@ -51,7 +54,6 @@ def eval_genomes(genomes, config):
                 #scaledimg = cv2.cvtColor(obs, cv2.COLOR_BGR2RGB)
                 scaledimg = cv2.resize(scaledimg, (input_x, input_y))
 
-            #print('obs.shape: {}'.format(obs.shape))
             obs = cv2.resize(obs, (input_x, input_y))
             obs = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
             obs = np.reshape(obs, (input_x, input_y))
@@ -61,7 +63,7 @@ def eval_genomes(genomes, config):
                 cv2.imshow('main', scaledimg)
                 cv2.waitKey(1)
 
-            #Reshape input to a 1-d list. If using keras or tf, you can
+            #Reshape input to a 1-d list. Note: If using keras or tf, you can
             #just use a convolution nn command
             for x in obs:
                 for y in x:
@@ -69,21 +71,21 @@ def eval_genomes(genomes, config):
 
             nn_output = net.activate(imgarray)
 
-            #print(action)
-            #print(len(imgarray), nn_output)
-
             obs, reward, done, info = env.step(nn_output)
-
-            #fitness_current += reward
 
             imgarray.clear()
 
-            #x_position = info['x']
             x_position = info['xscrollLo']
             if x_position > x_position_max:
                 fitness_current += 1 #get a reward for moving to the right
                 x_position_max = x_position
 
+            #TODO: try this instead of looking at xscrollLo. This reward function gives
+            #1 point every time xscrollLo increases, so it should work the same
+            #fitness_current += reward
+
+            #TODO: If not trying the above ^^ fitness calculation: replace 100
+            #with the xscrollLo value at the end of the level (or end of the game?)
             if x_position > 100:
                 fitness_current += 100000
                 done = True
@@ -101,8 +103,6 @@ def eval_genomes(genomes, config):
             genome.fitness = fitness_current
 
 
-
-
 config = neat.Config(
     neat.DefaultGenome,
     neat.DefaultReproduction,
@@ -113,13 +113,15 @@ config = neat.Config(
 
 p = neat.Population(config)
 
-#reporting statistics
+#show reporting statistics
 p.add_reporter(neat.StdOutReporter(True))
 stats = neat.StatisticsReporter()
 p.add_reporter(stats)
+#create a checkpoint of the NN
 p.add_reporter(neat.Checkpointer(10))
 
 winner = p.run(eval_genomes)
 
+#save the winner
 with open('winner.pkl', 'wb') as output:
     pickle.dump(winner, output, 1)
