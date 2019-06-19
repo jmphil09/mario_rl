@@ -5,16 +5,15 @@ import neat
 import pickle
 
 
-env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
-
-imgarray = []
-
+#Global variables
 #Render the game as the NN is working
 SHOW_GAME = True
 #Render what the NN sees as it is working (scaled down and gray images)
 SHOW_NN_VIEW = False
 #TODO: see if both can be rendered without crashing
 assert not (SHOW_GAME and SHOW_NN_VIEW)
+
+env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
 
 
 def eval_genomes(genomes, config):
@@ -63,17 +62,12 @@ def eval_genomes(genomes, config):
                 cv2.imshow('main', scaledimg)
                 cv2.waitKey(1)
 
-            #Reshape input to a 1-d list. Note: If using keras or tf, you can
-            #just use a convolution nn command
-            for x in obs:
-                for y in x:
-                    imgarray.append(y)
+            #Reshape input to a 1-d list.
+            imgarray = [num for row in obs for num in row]
 
             nn_output = net.activate(imgarray)
 
             obs, reward, done, info = env.step(nn_output)
-
-            imgarray.clear()
 
             x_position = info['xscrollLo']
             if x_position > x_position_max:
