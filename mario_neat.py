@@ -31,9 +31,8 @@ def eval_genomes(genomes, config):
         current_max_fitness = 0
         fitness_current = 0
         frame = 0
-        counter = 0
-        x_position = 0
-        x_position_max = 0
+        frame_counter = 0
+        previous_lives = 2
 
         done = False
 
@@ -69,30 +68,33 @@ def eval_genomes(genomes, config):
 
             obs, reward, done, info = env.step(nn_output)
 
-            x_position = info['xscrollLo']
-            if x_position > x_position_max:
-                fitness_current += 1 #get a reward for moving to the right
-                x_position_max = x_position
+            #Don't let mario die!
+            current_lives = info['lives']
+            if current_lives < previous_lives:
+                done = True
+                fitness_current = -1
+            previous_lives = current_lives
 
-            #TODO: try this instead of looking at xscrollLo. This reward function gives
-            #1 point every time xscrollLo increases, so it should work the same
-            #fitness_current += reward
+            #This reward function gives 1 point every time xscrollLo increases
+            fitness_current += reward
 
-            #TODO: If not trying the above ^^ fitness calculation: replace 100
-            #with the xscrollLo value at the end of the level (or end of the game?)
-            if x_position > 100:
+            #TODO: Anytime mario gets a powerup (score+=1000), give an extra reward
+
+            #Replace the RHS with the xscrollLo value at the end of the level
+            #or end of the game
+            if fitness_current > 5000:
                 fitness_current += 100000
                 done = True
 
             if fitness_current > current_max_fitness:
                 current_max_fitness = fitness_current
-                counter = 0
+                frame_counter = 0
             else:
-                counter += 1
+                frame_counter += 1
 
-            if done or counter == 250:
+            if done or frame_counter == 500:
                 done = True
-                print(genome_id, fitness_current)
+                print('genome_id: {}, fitness_current: {}'.format(genome_id, fitness_current))
 
             genome.fitness = fitness_current
 
