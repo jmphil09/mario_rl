@@ -33,6 +33,7 @@ def eval_genomes(genomes, config):
         frame = 0
         frame_counter = 0
         previous_lives = 2
+        previous_score = 0
 
         done = False
 
@@ -69,16 +70,21 @@ def eval_genomes(genomes, config):
             obs, reward, done, info = env.step(nn_output)
 
             #Don't let mario die!
-            current_lives = info['lives']
+            '''current_lives = info['lives']
             if current_lives < previous_lives:
                 done = True
                 fitness_current = -1
-            previous_lives = current_lives
+            previous_lives = current_lives'''
 
             #This reward function gives 1 point every time xscrollLo increases
             fitness_current += reward
 
-            #TODO: Anytime mario gets a powerup (score+=1000), give an extra reward
+            #Anytime mario gets a powerup (score+=1000), give an extra reward
+            current_score = int(info['score'])
+            #if current_score - previous_score >= 1:
+            if current_score > previous_score:
+                fitness_current += 25
+            previous_score = current_score
 
             #Replace the RHS with the xscrollLo value at the end of the level
             #or end of the game
@@ -92,7 +98,7 @@ def eval_genomes(genomes, config):
             else:
                 frame_counter += 1
 
-            if done or frame_counter == 500:
+            if done or frame_counter == 250:
                 done = True
                 print('genome_id: {}, fitness_current: {}'.format(genome_id, fitness_current))
 
