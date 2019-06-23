@@ -32,11 +32,6 @@ def run(values):
             input_y = int(input_y/8)
 
             net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
-            #print('============================')
-            #print(net)
-            #net2 = neat.Checkpointer.restore_checkpoint('thread-0-neat-checkpoint-0')
-            #print(net2)
-            #print('============================')
 
             current_max_fitness = 0
             fitness_current = 0
@@ -140,14 +135,14 @@ def run(values):
         neat.Checkpointer(
             generation_interval=5,
             time_interval_seconds=300,
-            filename_prefix='thread-{}-neat-checkpoint-'.format(values)
+            filename_prefix='data\\thread-{}-neat-checkpoint-'.format(values)
             )
         )
 
     winner = p.run(eval_genomes)
 
     #Save the winner
-    pickle_name = 'winner{}.pkl'.format(values)
+    pickle_name = 'complete_models\\winner{}.pkl'.format(values)
     with open(pickle_name, 'wb') as output:
         pickle.dump(winner, output, 1)
 
@@ -168,8 +163,8 @@ if __name__ == '__main__':  # Necessary on Windows, but not Mac (linux?)
 #helper functions
 def get_latest_checkpoint(thread):
     result = None
-    file_list = glob.glob('thread-{}-neat-checkpoint-*'.format(thread))
+    file_list = glob.glob('data\\thread-{}-neat-checkpoint-*'.format(thread))
     if file_list:
-        max_file_num = max([int(item.replace('thread-{}-neat-checkpoint-'.format(thread), '')) for item in file_list])
-        result = 'thread-{}-neat-checkpoint-{}'.format(thread, max_file_num)
+        max_file_num = max([int(item.replace('data\\thread-{}-neat-checkpoint-'.format(thread), '')) for item in file_list])
+        result = 'data\\thread-{}-neat-checkpoint-{}'.format(thread, max_file_num)
     return result
