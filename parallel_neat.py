@@ -1,5 +1,5 @@
 from multiprocessing import Pool
-
+import glob
 import retro
 import numpy as np
 import cv2
@@ -89,16 +89,16 @@ def run(values):
                 #This reward function gives 1 point every time xscrollLo increases
                 fitness_current += reward
 
-                #Anytime mario gets a powerup (score+=1000), give an extra reward
+                '''#Anytime mario gets a powerup (score+=1000), give an extra reward
                 current_score = int(info['score'])
                 #if current_score - previous_score >= 1:
                 if current_score > previous_score:
                     fitness_current += 25
-                previous_score = current_score
+                previous_score = current_score'''
 
                 #Replace the RHS with the xscrollLo value at the end of the level
                 #or end of the game
-                if fitness_current > 2500:
+                if fitness_current > 3186:
                     fitness_current += 100000
                     done = True
 
@@ -122,12 +122,14 @@ def run(values):
         'config-feedforward'
     )
 
-    p = neat.Population(config)
-    print('----------------------------')
-    print(p)
-    p2 = neat.Checkpointer.restore_checkpoint('thread-0-neat-checkpoint-0')
-    print(p2)
-    print('----------------------------')
+    #Load population checkpoint if one exists
+    latest_checkpoint = get_latest_checkpoint(values)
+    if latest_checkpoint:
+        p = neat.Checkpointer.restore_checkpoint(latest_checkpoint)
+        print('Loaded population checkpoint: {}'.format(latest_checkpoint))
+    else:
+        p = neat.Population(config)
+        print('No population checkpoint found, creating new population.')
 
     #Show reporting statistics
     p.add_reporter(neat.StdOutReporter(True))
@@ -136,8 +138,8 @@ def run(values):
     #Create a checkpoint of the NN
     p.add_reporter(
         neat.Checkpointer(
-            generation_interval=1,
-            time_interval_seconds=6,
+            generation_interval=5,
+            time_interval_seconds=300,
             filename_prefix='thread-{}-neat-checkpoint-'.format(values)
             )
         )
@@ -150,6 +152,24 @@ def run(values):
         pickle.dump(winner, output, 1)
 
 
+def main():
+    try:
+        p = Pool(processes=NUMBER_OF_THREADS)
+        p.map(run, tuple(range(NUMBER_OF_THREADS)))
+    except KeyboardInterrupt:
+        print("Caught KeyboardInterrupt, terminating workers")
+        return
+
+
 if __name__ == '__main__':  # Necessary on Windows, but not Mac (linux?)
-    p = Pool(processes=NUMBER_OF_THREADS)
-    p.map(run, tuple(range(NUMBER_OF_THREADS)))
+    main()
+
+
+#helper functions
+def get_latest_checkpoint(thread):
+    result = None
+    file_list = glob.glob('thread-{}-neat-checkpoint-*'.format(thread))
+    if file_list:
+        max_file_num = max([int(item.replace('thread-{}-neat-checkpoint-'.format(thread), '')) for item in file_list])
+        result = 'thread-{}-neat-checkpoint-{}'.format(thread, max_file_num)
+    return result
