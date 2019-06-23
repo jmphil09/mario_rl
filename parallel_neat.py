@@ -32,6 +32,11 @@ def run(values):
             input_y = int(input_y/8)
 
             net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
+            #print('============================')
+            #print(net)
+            #net2 = neat.Checkpointer.restore_checkpoint('thread-0-neat-checkpoint-0')
+            #print(net2)
+            #print('============================')
 
             current_max_fitness = 0
             fitness_current = 0
@@ -109,7 +114,6 @@ def run(values):
 
                 genome.fitness = fitness_current
 
-
     config = neat.Config(
         neat.DefaultGenome,
         neat.DefaultReproduction,
@@ -119,22 +123,33 @@ def run(values):
     )
 
     p = neat.Population(config)
+    print('----------------------------')
+    print(p)
+    p2 = neat.Checkpointer.restore_checkpoint('thread-0-neat-checkpoint-0')
+    print(p2)
+    print('----------------------------')
 
-    #show reporting statistics
+    #Show reporting statistics
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
-    #create a checkpoint of the NN
-    #p.add_reporter(neat.Checkpointer(10))
+    #Create a checkpoint of the NN
+    p.add_reporter(
+        neat.Checkpointer(
+            generation_interval=1,
+            time_interval_seconds=6,
+            filename_prefix='thread-{}-neat-checkpoint-'.format(values)
+            )
+        )
 
     winner = p.run(eval_genomes)
 
-    #save the winner
+    #Save the winner
     pickle_name = 'winner{}.pkl'.format(values)
     with open(pickle_name, 'wb') as output:
         pickle.dump(winner, output, 1)
 
 
-if __name__ == '__main__': #Necessary on Windows, but not Mac (linux?)
+if __name__ == '__main__':  # Necessary on Windows, but not Mac (linux?)
     p = Pool(processes=NUMBER_OF_THREADS)
     p.map(run, tuple(range(NUMBER_OF_THREADS)))
