@@ -12,14 +12,13 @@ NUMBER_OF_THREADS = 16
 def run(values):
     #Global variables
     #Render the game as the NN is working
-    SHOW_GAME = True
+    SHOW_GAME = False
     #Render what the NN sees as it is working (scaled down and gray images)
     SHOW_NN_VIEW = False
     #TODO: see if both can be rendered without crashing
     assert not (SHOW_GAME and SHOW_NN_VIEW)
 
     env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
-
 
     def eval_genomes(genomes, config):
 
@@ -104,8 +103,8 @@ def run(values):
                     frame_counter += 1
 
                 if done or frame_counter == 250:
+                    #print('genome_id: {}, fitness_current: {}'.format(genome_id, fitness_current))
                     done = True
-                    print('genome_id: {}, fitness_current: {}'.format(genome_id, fitness_current))
 
                 genome.fitness = fitness_current
 
@@ -147,19 +146,6 @@ def run(values):
         pickle.dump(winner, output, 1)
 
 
-def main():
-    try:
-        p = Pool(processes=NUMBER_OF_THREADS)
-        p.map(run, tuple(range(NUMBER_OF_THREADS)))
-    except KeyboardInterrupt:
-        print("Caught KeyboardInterrupt, terminating workers")
-        return
-
-
-if __name__ == '__main__':  # Necessary on Windows, but not Mac (linux?)
-    main()
-
-
 #helper functions
 def get_latest_checkpoint(thread):
     result = None
@@ -168,3 +154,9 @@ def get_latest_checkpoint(thread):
         max_file_num = max([int(item.replace('data\\thread-{}-neat-checkpoint-'.format(thread), '')) for item in file_list])
         result = 'data\\thread-{}-neat-checkpoint-{}'.format(thread, max_file_num)
     return result
+
+
+# Necessary on Windows, but not Mac (linux?)
+if __name__ == '__main__':
+    p = Pool(processes=NUMBER_OF_THREADS)
+    p.map(run, tuple(range(NUMBER_OF_THREADS)))
