@@ -1,10 +1,12 @@
-from multiprocessing import Pool
 import glob
 import retro
 import numpy as np
 import cv2
 import neat
 import pickle
+
+from multiprocessing import Pool
+from pathlib import Path
 
 
 class GameRunner:
@@ -27,13 +29,10 @@ class GameRunner:
         #Stuff to add to docstring
         #Render the game as the NN is working
         #Render what the NN sees as it is working (scaled down and gray images)
-        #TODO: see if both can be rendered without crashing
-        assert not (self.show_game and self.show_nn_view)
 
-        # Necessary on Windows, but not Mac (linux?)
-        if __name__ == '__main__':
-            p = Pool(processes=self.num_threads)
-            p.map(self.run, tuple(range(self.num_threads)))
+
+        p = Pool(processes=self.num_threads)
+        p.map(self.run, tuple(range(self.num_threads)))
 
     def run(self, worker_num):
         env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
@@ -70,7 +69,6 @@ class GameRunner:
                     #SHOW NN
                     if self.show_nn_view:
                         scaledimg = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
-                        #scaledimg = cv2.cvtColor(obs, cv2.COLOR_BGR2RGB)
                         scaledimg = cv2.resize(scaledimg, (input_x, input_y))
 
                     obs = cv2.resize(obs, (input_x, input_y))
@@ -132,28 +130,33 @@ class GameRunner:
         stats = neat.StatisticsReporter()
         p.add_reporter(stats)
         #Create a checkpoint of the NN
+        save_filename = Path('data/{}/worker-{}-neat-checkpoint-'.format(self.config_file_name, worker_num))
+        save_dir = save_filename.parent
+        save_dir.mkdir(parents=True, exist_ok=True)
         p.add_reporter(
             neat.Checkpointer(
                 generation_interval=5,
-                time_interval_seconds=300,
-                filename_prefix='data\\thread-{}-neat-checkpoint-'.format(worker_num)
-                )
+                time_interval_seconds=3,
+                filename_prefix=save_filename
             )
+        )
 
         winner = p.run(eval_genomes)
 
         #Save the winner
-        pickle_name = 'complete_models\\winner{}.pkl'.format(worker_num)
+        pickle_name = Path('data/{}/complete_models/winner{}.pkl'.format(self.config_file_name, worker_num))
+        pickle_dir = pickle_name.parent
+        pickle_dir.mkdir(parents=True, exist_ok=True)
         with open(pickle_name, 'wb') as output:
             pickle.dump(winner, output, 1)
 
     #helper functions
     def _get_latest_checkpoint(self, worker):
         result = None
-        file_list = glob.glob('data\\worker-{}-neat-checkpoint-*'.format(worker))
+        file_list = glob.glob(str(Path('data/{}/worker-{}-neat-checkpoint-*'.format(self.config_file_name, worker))))
         if file_list:
-            max_file_num = max([int(item.replace('data\\worker-{}-neat-checkpoint-'.format(worker), '')) for item in file_list])
-            result = 'data\\worker-{}-neat-checkpoint-{}'.format(worker, max_file_num)
+            max_file_num = max([int(item.replace(str(Path('data/{}/worker-{}-neat-checkpoint-'.format(self.config_file_name, worker))), '')) for item in file_list])
+            result = str(Path('data/{}/worker-{}-neat-checkpoint-{}'.format(self.config_file_name, worker, max_file_num)))
         return result
 
     def _penalize_for_dying(self, previous_info, current_info):
