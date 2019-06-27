@@ -30,12 +30,12 @@ class GameRunner:
         #Render the game as the NN is working
         #Render what the NN sees as it is working (scaled down and gray images)
 
-
         p = Pool(processes=self.num_threads)
         p.map(self.run, tuple(range(self.num_threads)))
 
     def run(self, worker_num):
         env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
+        self.config_file_name = '{}_{}'.format(self.config_file_name, worker_num)
 
         def eval_genomes(genomes, config):
 
@@ -136,7 +136,7 @@ class GameRunner:
         p.add_reporter(
             neat.Checkpointer(
                 generation_interval=5,
-                time_interval_seconds=3,
+                time_interval_seconds=300,
                 filename_prefix=save_filename
             )
         )
