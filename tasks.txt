@@ -1,0 +1,2 @@
+1) Record the highest fitness from each run in a text file. Print the text file any time a checkpoint is created.
+2) Write a script to load all checkpoints in a folder and graph the data. (fitness by generation)
