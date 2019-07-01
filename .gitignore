@@ -109,6 +109,7 @@ mario_env
 # other repos
 neat-python
 retro
+gym-super-mario-bros
 
 # roms
 *.nes
