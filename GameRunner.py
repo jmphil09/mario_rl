@@ -30,8 +30,12 @@ class GameRunner:
         #Render the game as the NN is working
         #Render what the NN sees as it is working (scaled down and gray images)
 
+    def run_all_threads(self):
         p = Pool(processes=self.num_threads)
         p.map(self.run, tuple(range(self.num_threads)))
+
+    def run_one_worker(self, worker_num):
+        self.run(worker_num)
 
     def run(self, worker_num):
         env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
