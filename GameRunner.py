@@ -26,6 +26,10 @@ class GameRunner:
         self.convolution_weight = convolution_weight
         self.config_file_name = config_file_name
 
+        self.fitness_scores_for_generation = []
+        self.fitness_dict = {}
+        self.generation = 0
+
         #Stuff to add to docstring
         #Render the game as the NN is working
         #Render what the NN sees as it is working (scaled down and gray images)
@@ -110,7 +114,28 @@ class GameRunner:
                         #print('genome_id: {}, fitness_current: {}'.format(genome_id, fitness_current))
                         done = True
 
+
                     genome.fitness = fitness_current
+
+                self.fitness_scores_for_generation.append(fitness_current)
+
+            fitness_list_filename = Path('data/{}/worker-{}-fitness_list.pkl'.format(self.config_file_name, worker_num))
+
+            try:
+                with open(fitness_list_filename, 'rb') as input_file:
+                    print(input_file)
+                    self.fitness_dict = pickle.load(input_file)
+                    print("DICT: ")
+                    print(self.fitness_dict)
+            except:
+                    self.fitness_dict = {}
+
+            with open(fitness_list_filename, 'wb') as output:
+                self.fitness_dict[self.generation] = self.fitness_scores_for_generation
+                pickle.dump(self.fitness_dict, output, 1)
+                self.fitness_dict = {}
+                self.fitness_scores_for_generation = []
+                self.generation += 1
 
         config = neat.Config(
             neat.DefaultGenome,
@@ -134,14 +159,14 @@ class GameRunner:
         stats = neat.StatisticsReporter()
         p.add_reporter(stats)
         #Create a checkpoint of the NN
-        save_filename = Path('data/{}/worker-{}-neat-checkpoint-'.format(self.config_file_name, worker_num))
-        save_dir = save_filename.parent
+        checkpoint_filename = Path('data/{}/worker-{}-neat-checkpoint-'.format(self.config_file_name, worker_num))
+        save_dir = checkpoint_filename.parent
         save_dir.mkdir(parents=True, exist_ok=True)
         p.add_reporter(
             neat.Checkpointer(
-                generation_interval=5,
+                generation_interval=1,
                 time_interval_seconds=300,
-                filename_prefix=save_filename
+                filename_prefix=checkpoint_filename
             )
         )
 
@@ -160,6 +185,7 @@ class GameRunner:
         file_list = glob.glob(str(Path('data/{}/worker-{}-neat-checkpoint-*'.format(self.config_file_name, worker))))
         if file_list:
             max_file_num = max([int(item.replace(str(Path('data/{}/worker-{}-neat-checkpoint-'.format(self.config_file_name, worker))), '')) for item in file_list])
+            self.generation = max_file_num + 1
             result = str(Path('data/{}/worker-{}-neat-checkpoint-{}'.format(self.config_file_name, worker, max_file_num)))
         return result
 
