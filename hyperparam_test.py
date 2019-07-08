@@ -12,4 +12,3 @@ if __name__ == '__main__':
     )
 
     runner.run_all_threads()
-    #runner.run_one_worker(13)
