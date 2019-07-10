@@ -118,4 +118,6 @@ gym-super-mario-bros
 *.pkl
 
 # data files
-data*
+data*/old/*
+data*/config_*/*
+!data*/config_*/*.pkl
