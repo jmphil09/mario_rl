@@ -17,7 +17,8 @@ class GameRunner:
         show_nn_view=False,
         level_end_score=3186,
         convolution_weight=8,
-        config_file_name='config'
+        config_file_name='config',
+        worker_start_num=0
     ):
         self.num_threads = num_threads
         self.show_game = show_game
@@ -29,6 +30,7 @@ class GameRunner:
         self.fitness_scores_for_generation = []
         self.fitness_dict = {}
         self.generation = 0
+        self.worker_start_num = worker_start_num
 
         #Stuff to add to docstring
         #Render the game as the NN is working
@@ -36,7 +38,7 @@ class GameRunner:
 
     def run_all_threads(self):
         p = Pool(processes=self.num_threads)
-        p.map(self.run, tuple(range(self.num_threads)))
+        p.map(self.run, tuple(range(self.worker_start_num, self.worker_start_num + self.num_threads)))
 
     def run_one_worker(self, worker_num):
         self.run(worker_num)
