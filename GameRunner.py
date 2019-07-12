@@ -113,9 +113,7 @@ class GameRunner:
                         frame_counter += 1
 
                     if done or frame_counter == 250:
-                        #print('genome_id: {}, fitness_current: {}'.format(genome_id, fitness_current))
                         done = True
-
 
                     genome.fitness = fitness_current
 
@@ -125,10 +123,7 @@ class GameRunner:
 
             try:
                 with open(fitness_list_filename, 'rb') as input_file:
-                    print(input_file)
                     self.fitness_dict = pickle.load(input_file)
-                    print("DICT: ")
-                    print(self.fitness_dict)
             except:
                     self.fitness_dict = {}
 
