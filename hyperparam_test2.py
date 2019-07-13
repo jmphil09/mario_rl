@@ -9,7 +9,7 @@ if __name__ == '__main__':
         level_end_score=3186,
         convolution_weight=8,
         config_file_name='config',
-        worker_start_num=16
+        worker_start_num=0
     )
 
     runner.run_all_threads()
