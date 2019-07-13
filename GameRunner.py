@@ -18,7 +18,8 @@ class GameRunner:
         level_end_score=3186,
         convolution_weight=8,
         config_file_name='config',
-        worker_start_num=0
+        worker_start_num=0,
+        max_generation=200
     ):
         self.num_threads = num_threads
         self.show_game = show_game
@@ -31,6 +32,7 @@ class GameRunner:
         self.fitness_dict = {}
         self.generation = 0
         self.worker_start_num = worker_start_num
+        self.max_generation = max_generation
 
         #Stuff to add to docstring
         #Render the game as the NN is working
@@ -167,7 +169,7 @@ class GameRunner:
             )
         )
 
-        winner = p.run(eval_genomes)
+        winner = p.run(eval_genomes, n=self.max_generation)
 
         #Save the winner
         pickle_name = Path('data/{}/complete_models/winner{}.pkl'.format(self.config_file_name, worker_num))
