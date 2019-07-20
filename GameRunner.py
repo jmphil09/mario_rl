@@ -10,6 +10,17 @@ from pathlib import Path
 
 
 class GameRunner:
+    """General GameRunner class to have a NN generate a model to beat a game.
+
+    Args:
+        num_threads (int): Number of cpu threads to use
+        show_game (bool): Render the frames in real-time while training
+        show_nn_view (bool): Show what the Neural Network "sees" after the frame is processed
+        level_end_score (int): The maximum fitness score to cause the training to end
+        convolution_weight (int): Factor used to scale the image down before feeding it to the Neural Network
+        config_file_name (str): The prefix to use for the config file
+        worker_start_num (int): The cpu core number to start with
+    """
     def __init__(
         self,
         num_threads=1,
@@ -27,16 +38,12 @@ class GameRunner:
         self.level_end_score = level_end_score
         self.convolution_weight = convolution_weight
         self.config_file_name = config_file_name
+        self.worker_start_num = worker_start_num
+        self.max_generation = max_generation
 
         self.fitness_scores_for_generation = []
         self.fitness_dict = {}
         self.generation = 0
-        self.worker_start_num = worker_start_num
-        self.max_generation = max_generation
-
-        #Stuff to add to docstring
-        #Render the game as the NN is working
-        #Render what the NN sees as it is working (scaled down and gray images)
 
     def run_all_threads(self):
         p = Pool(processes=self.num_threads)
