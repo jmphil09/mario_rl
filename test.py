@@ -1,13 +1,5 @@
-from GameRunner import GameRunner
+from ConfigGenerator import ConfigGenerator
 
+config = ConfigGenerator()
 
-runner = GameRunner(
-        num_threads=1,
-        show_game=True,
-        show_nn_view=False,
-        level_end_score=3186,
-        convolution_weight=8,
-        config_file_name='config'
-    )
-
-runner.run_all_threads()
+config.write_all_configs(num_workers=32)
