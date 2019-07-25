@@ -246,10 +246,10 @@ class ConfigGenerator:
             file_data = '\n'.join(line.lstrip() for line in file_data.splitlines()[1::])
             fn.write(file_data)
 
-    def write_all_configs(self, num_workers=16):
+    def write_all_configs(self, config_start_num=0, config_end_num=16):
         self.write_file()
         with open(self.filename, 'r') as orig_config:
             config_data = orig_config.read()
-            for config_file_name in [Path(str(self.filename) + '_' + str(worker_num)) for worker_num in range(num_workers)]:
+            for config_file_name in [Path(str(self.filename) + '_' + str(worker_num)) for worker_num in range(config_start_num, config_end_num)]:
                 with open(config_file_name, 'w') as fn:
                     fn.write(config_data)
