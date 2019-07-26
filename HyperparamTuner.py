@@ -1,19 +1,16 @@
 import pickle
+import time
 
+from multiprocessing import Pool
 from pathlib import Path
 
 from ConfigGenerator import ConfigGenerator
 from GameRunner import GameRunner
 
 
-
 class HyperparamTuner:
     def __init__(self):
-
-        worker = 13
-
-        #randomize for the first run, get from NN on following runs
-        config_input = {
+        self.config_input = {
             'pop_size': 2,
             'reset_on_extinction': False,
             'activation_default': "sigmoid",
@@ -62,8 +59,13 @@ class HyperparamTuner:
             'survival_threshold': 0.2
         }
 
+    def run_one_worker(self, worker_num):
+        worker = worker_num
+
+        #randomize for the first run, get from NN on following runs
+
         #create config file
-        config = ConfigGenerator(**config_input)
+        config = ConfigGenerator(**self.config_input)
         config.write_all_configs(config_start_num=worker, config_end_num=worker + 1)
 
         #run worker
@@ -81,5 +83,22 @@ class HyperparamTuner:
         score = sum([max(value) for (key, value) in fitness_dict.items()]) / len(fitness_dict)
 
         #output = (config params, score)
-        output = (list(config_input.values()), score)
-        print(output)
+        output = (list(self.config_input.values()), score)
+
+        #save the output
+        #pickle_name = Path('data/hp_output/worker_{}_{}'.format(worker_num, str(int(time.time()))))
+        pickle_name = Path('data/hp_output/worker_{}'.format(worker_num))
+        pickle_dir = pickle_name.parent
+        pickle_dir.mkdir(parents=True, exist_ok=True)
+        with open(pickle_name, 'wb') as out_file:
+            pickle.dump(output, out_file, 1)
+
+    def run_multiple_workers(self, worker_start_num, worker_end_num):
+        p = Pool(processes=worker_end_num - worker_start_num)
+        pool_values = tuple(range(worker_start_num, worker_end_num))
+        p.map(self.run_one_worker, pool_values)
+
+    def print_output(self, worker_num):
+        data_file = Path('data/hp_output/worker_{}'.format(worker_num))
+        data = pickle.load(open(data_file, 'rb'))
+        print(data)
