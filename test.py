@@ -1,22 +1,25 @@
+import shutil
+
 from ConfigGenerator import ConfigGenerator
 from HyperparamTuner import HyperparamTuner
 
 
 if __name__ == '__main__':
-    N = 4
+    try:
+        shutil.rmtree('data')
+    except Exception as ex:
+        print("data directory does not exist")
+        print(ex)
+    N = 12
     worker_start_num = 0
     worker_end_num = N
     config = ConfigGenerator()
-    config.write_file()
     config_dict = config.randomize()
-    config.write_file()
     config.write_all_configs(worker_start_num, worker_end_num)
-    #tuner = HyperparamTuner()
     tuner = HyperparamTuner(config_dict)
-    #result = tuner.run_one_worker(14)
     result = tuner.run_multiple_workers(worker_start_num, worker_end_num)
-    #tuner.print_output(29)
-    #tuner.print_output(30)
+    score_list = []
     for n in range(0, N):
-        tuner.print_output(n)
-
+        score_list.append(tuner.print_output(n)[1])
+    print("Max Score: {}".format(max(score_list)))
+    print("Average Score: {}".format(sum(score_list)/len(score_list)))

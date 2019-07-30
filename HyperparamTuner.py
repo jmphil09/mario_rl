@@ -12,7 +12,7 @@ class HyperparamTuner:
     def __init__(
         self,
         config_input={
-            'pop_size': 2,
+            'pop_size': 20,
             'reset_on_extinction': False,
             'activation_default': "sigmoid",
             'activation_mutate_rate': 0.0,
@@ -69,7 +69,7 @@ class HyperparamTuner:
 
         #create config file
         config = ConfigGenerator(**self.config_input)
-        config.write_all_configs(config_start_num=worker, config_end_num=worker + 1)
+        #config.write_all_configs(config_start_num=worker, config_end_num=worker + 1)
 
         #run worker
         runner = GameRunner(show_game=True, max_generation=2)
@@ -105,3 +105,4 @@ class HyperparamTuner:
         data_file = Path('data/hp_output/worker_{}'.format(worker_num))
         data = pickle.load(open(data_file, 'rb'))
         print(data)
+        return data
