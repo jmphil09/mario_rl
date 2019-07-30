@@ -1,3 +1,5 @@
+import random
+
 from pathlib import Path
 
 
@@ -253,3 +255,56 @@ class ConfigGenerator:
             for config_file_name in [Path(str(self.filename) + '_' + str(worker_num)) for worker_num in range(config_start_num, config_end_num)]:
                 with open(config_file_name, 'w') as fn:
                     fn.write(config_data)
+
+    def randomize(self):
+        #self.filename = Path(filename)
+        self.fitness_criterion = random.choice(['min', 'max', 'mean'])
+        #self.fitness_threshold = random.choice([])
+        #self.pop_size = pop_size
+        self.reset_on_extinction = random.choice(['True', 'False'])
+        self.activation_default = 'random'
+        self.activation_mutate_rate = random.uniform(0.0, 1.0)
+        self.activation_options = random.choice(['abs', 'clamped', 'cube', 'exp', 'gauss', 'hat', 'identity', 'inv', 'log', 'relu', 'elu', 'lelu', 'selu', 'sigmoid', 'sin', 'softplus', 'square', 'tanh'])
+        self.aggregation_default = 'random'
+        self.aggregation_mutate_rate = random.uniform(0.0, 1.0)
+        self.aggregation_options = random.choice(['sum', 'product', 'min', 'max', 'mean', 'median', 'maxabs'])
+        #self.bias_init_mean = bias_init_mean
+        #self.bias_init_stdev = bias_init_stdev
+        #self.bias_max_value = bias_max_value
+        #self.bias_min_value = bias_min_value
+        #self.bias_mutate_power = bias_mutate_power
+        #self.bias_mutate_rate = bias_mutate_rate
+        #self.bias_replace_rate = bias_replace_rate
+        #self.compatibility_disjoint_coefficient = compatibility_disjoint_coefficient
+        #self.compatibility_weight_coefficient = compatibility_weight_coefficient
+        self.conn_add_prob = random.uniform(0.0, 1.0)
+        self.conn_delete_prob = random.uniform(0.0, 1.0)
+        self.enabled_default = random.choice(['True', 'False'])
+        self.enabled_mutate_rate = random.uniform(0.0, 1.0)
+        self.feed_forward = random.choice(['True', 'False'])
+        self.initial_connection = random.choice(['unconnected', 'fs_neat_nohidden', 'fs_neat_hidden', 'full_nodirect', 'full_direct', 'partial_nodirect', 'partial_direct'])
+        self.node_add_prob = random.uniform(0.0, 1.0)
+        self.node_delete_prob = random.uniform(0.0, 1.0)
+        #self.num_hidden = num_hidden
+        #self.num_inputs = num_inputs
+        #self.num_outputs = num_outputs
+        #self.response_init_mean = response_init_mean
+        #self.response_init_stdev = response_init_stdev
+        #self.response_max_value = response_max_value
+        #self.response_min_value = response_min_value
+        #self.response_mutate_power = response_mutate_power
+        #self.response_mutate_rate = response_mutate_rate
+        #self.response_replace_rate = response_replace_rate
+        #self.weight_init_mean = weight_init_mean
+        #self.weight_init_stdev = weight_init_stdev
+        #self.weight_max_value = weight_max_value
+        #self.weight_min_value = weight_min_value
+        #self.weight_mutate_power = weight_mutate_power
+        #self.weight_mutate_rate = weight_mutate_rate
+        #self.weight_replace_rate = weight_replace_rate
+        #self.compatibility_threshold = compatibility_threshold
+        self.species_fitness_func = random.choice(['max', 'min', 'mean', 'median'])
+        self.max_stagnation = int(random.uniform(2, 20))
+        self.species_elitism = int(random.uniform(0, 5))
+        self.elitism = int(random.uniform(0, 5))
+        self.survival_threshold = random.uniform(0.0, 1.0)
