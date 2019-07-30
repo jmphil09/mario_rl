@@ -308,3 +308,28 @@ class ConfigGenerator:
         self.species_elitism = int(random.uniform(0, 5))
         self.elitism = int(random.uniform(0, 5))
         self.survival_threshold = random.uniform(0.0, 1.0)
+
+        config_dict = {
+            'fitness_criterion': self.fitness_criterion,
+            'reset_on_extinction': self.reset_on_extinction,
+            'activation_default': self.activation_default,
+            'activation_mutate_rate': self.activation_mutate_rate,
+            'activation_options': self.activation_options,
+            'aggregation_default': self.aggregation_default,
+            'aggregation_mutate_rate': self.aggregation_mutate_rate,
+            'aggregation_options': self.aggregation_options,
+            'conn_add_prob': self.conn_add_prob,
+            'conn_delete_prob': self.conn_delete_prob,
+            'enabled_default': self.enabled_default,
+            'enabled_mutate_rate': self.enabled_mutate_rate,
+            'feed_forward': self.feed_forward,
+            'initial_connection': self.initial_connection,
+            'node_add_prob': self.node_add_prob,
+            'node_delete_prob': self.node_delete_prob,
+            'species_fitness_func': self.species_fitness_func,
+            'max_stagnation': self.max_stagnation,
+            'species_elitism': self.species_elitism,
+            'elitism': self.elitism,
+            'survival_threshold': self.survival_threshold
+        }
+        return config_dict

@@ -9,8 +9,9 @@ from GameRunner import GameRunner
 
 
 class HyperparamTuner:
-    def __init__(self):
-        self.config_input = {
+    def __init__(
+        self,
+        config_input={
             'pop_size': 2,
             'reset_on_extinction': False,
             'activation_default': "sigmoid",
@@ -58,6 +59,8 @@ class HyperparamTuner:
             'elitism': 2,
             'survival_threshold': 0.2
         }
+    ):
+        self.config_input = config_input
 
     def run_one_worker(self, worker_num):
         worker = worker_num
