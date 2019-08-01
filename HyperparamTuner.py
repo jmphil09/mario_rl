@@ -117,6 +117,12 @@ class HyperparamTuner:
         print(data)
         return data
 
+    def clear_data_dir(self):
+        try:
+            shutil.rmtree('data')
+        except Exception as ex:
+            print("data directory does not exist")
+            print(ex)
 
     def run(self):
         try:
@@ -127,7 +133,7 @@ class HyperparamTuner:
 
     def eval_genomes(self, genomes, config):
         worker_start_num = 0
-        worker_end_num = 16
+        worker_end_num = 4
 
         for genome_id, genome in genomes:
             #net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
@@ -135,7 +141,7 @@ class HyperparamTuner:
             cg = ConfigGenerator()
             config_dict = cg.randomize()
             cg.write_all_configs(worker_start_num, worker_end_num)
-            tuner = HyperparamTuner(config_dict)
+            tuner = HyperparamTuner(config_dict, max_generation=2)
             tuner.run_multiple_workers(worker_start_num, worker_end_num)
             score_list = []
             for n in range(worker_start_num, worker_end_num):
@@ -144,6 +150,7 @@ class HyperparamTuner:
             print("Max Score: {}".format(max(score_list)))
             print("Average Score: {}".format(sum(score_list)/len(score_list)))
             genome.fitness = sum(score_list)/len(score_list)
+            self.clear_data_dir()
 
             #while not done:
             #    imgarray = [num for row in obs for num in row]
@@ -151,17 +158,21 @@ class HyperparamTuner:
             #    obs, reward, done, info = env.step(nn_output)
             #    genome.fitness = fitness_current
 
+        print('Current generation: {}'.format(self.current_generation))
         if self.current_generation == self.max_generation:
             pickle_name = Path('data/optimized_config')
             pickle_dir = pickle_name.parent
             pickle_dir.mkdir(parents=True, exist_ok=True)
             with open(pickle_name, 'wb') as out_file:
+                output = 'test'
                 pickle.dump(output, out_file, 1)#TODO: change output to the NN output
             return #TODO: do something better than 'return'
         self.current_generation += 1
 
 
     def tune_hyperparams(self):
+        self.clear_data_dir()
+
         config = neat.Config(
             neat.DefaultGenome,
             neat.DefaultReproduction,
