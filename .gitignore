@@ -121,3 +121,4 @@ gym-super-mario-bros
 data*/old/*
 data*/config_*/*
 !data*/config_*/*.pkl
+hyperparam_data
