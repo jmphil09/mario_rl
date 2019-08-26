@@ -1,0 +1,80 @@
+[NEAT]
+fitness_criterion     = max
+fitness_threshold     = 100000
+pop_size              = 171
+reset_on_extinction   = True
+
+[DefaultGenome]
+# node activation options
+activation_default      = sigmoid
+activation_mutate_rate  = 0.0
+activation_options      = relu
+
+# node aggregation options
+aggregation_default     = random
+aggregation_mutate_rate = 0.8161115790105248
+aggregation_options     = sum
+
+# node bias options
+bias_init_mean          = 0.0
+bias_init_stdev         = 1.0
+bias_max_value          = 30.0
+bias_min_value          = -30.0
+bias_mutate_power       = 0.5
+bias_mutate_rate        = 0.7
+bias_replace_rate       = 0.1
+
+# genome compatibility options
+compatibility_disjoint_coefficient = 1.0
+compatibility_weight_coefficient   = 0.5
+
+# connection add/remove rates
+conn_add_prob           = 0.59092964168252
+conn_delete_prob        = 0.11125400240111127
+
+# connection enable options
+enabled_default         = True
+enabled_mutate_rate     = 0.3907196938152946
+
+feed_forward            = True
+initial_connection      = unconnected
+
+# node add/remove rates
+node_add_prob           = 0.44434265994927946
+node_delete_prob        = 0.24793711695201803
+
+# network parameters
+num_hidden              = 0
+num_inputs              = 840
+num_outputs             = 9
+
+# node response options
+response_init_mean      = 1.0
+response_init_stdev     = 0.0
+response_max_value      = 30.0
+response_min_value      = -30.0
+response_mutate_power   = 0.0
+response_mutate_rate    = 0.0
+response_replace_rate   = 0.0
+
+# connection weight options
+weight_init_mean        = 0.0
+weight_init_stdev       = 1.0
+weight_max_value        = 30
+weight_min_value        = -30
+weight_mutate_power     = 0.5
+weight_mutate_rate      = 0.8
+weight_replace_rate     = 0.1
+
+[DefaultSpeciesSet]
+compatibility_threshold = 3.0
+
+[DefaultStagnation]
+species_fitness_func = min
+max_stagnation       = 7
+species_elitism      = 1
+
+[DefaultReproduction]
+elitism            = 4
+survival_threshold = 0.8842023777794917
+
