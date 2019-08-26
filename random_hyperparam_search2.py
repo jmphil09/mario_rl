@@ -11,7 +11,7 @@ from GameRunner import GameRunner
 N = 16
 M = 10
 
-DATA_FOLDER_NAME = 'data'
+DATA_FOLDER_NAME = 'data2'
 
 
 #clear the data folder

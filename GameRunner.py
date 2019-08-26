@@ -30,7 +30,8 @@ class GameRunner:
         convolution_weight=8,
         config_file_name='config',
         worker_start_num=0,
-        max_generation=200
+        max_generation=200,
+        data_folder='data'
     ):
         self.num_threads = num_threads
         self.show_game = show_game
@@ -40,6 +41,7 @@ class GameRunner:
         self.config_file_name = config_file_name
         self.worker_start_num = worker_start_num
         self.max_generation = max_generation
+        self.data_folder = data_folder
 
         self.fitness_scores_for_generation = []
         self.fitness_dict = {}
@@ -128,7 +130,7 @@ class GameRunner:
 
                 self.fitness_scores_for_generation.append(fitness_current)
 
-            fitness_list_filename = Path('data/{}/worker-{}-fitness_list.pkl'.format(self.config_file_name, worker_num))
+            fitness_list_filename = Path('{}/{}/worker-{}-fitness_list.pkl'.format(self.data_folder, self.config_file_name, worker_num))
 
             try:
                 with open(fitness_list_filename, 'rb') as input_file:
@@ -165,7 +167,7 @@ class GameRunner:
         stats = neat.StatisticsReporter()
         p.add_reporter(stats)
         #Create a checkpoint of the NN
-        checkpoint_filename = Path('data/{}/worker-{}-neat-checkpoint-'.format(self.config_file_name, worker_num))
+        checkpoint_filename = Path('{}/{}/worker-{}-neat-checkpoint-'.format(self.data_folder, self.config_file_name, worker_num))
         save_dir = checkpoint_filename.parent
         save_dir.mkdir(parents=True, exist_ok=True)
         p.add_reporter(
@@ -179,7 +181,7 @@ class GameRunner:
         winner = p.run(eval_genomes, n=self.max_generation)
 
         #Save the winner
-        pickle_name = Path('data/{}/complete_models/winner{}.pkl'.format(self.config_file_name, worker_num))
+        pickle_name = Path('{}/{}/complete_models/winner{}.pkl'.format(self.data_folder, self.config_file_name, worker_num))
         pickle_dir = pickle_name.parent
         pickle_dir.mkdir(parents=True, exist_ok=True)
         with open(pickle_name, 'wb') as output:
@@ -188,30 +190,9 @@ class GameRunner:
     #helper functions
     def _get_latest_checkpoint(self, worker):
         result = None
-        file_list = glob.glob(str(Path('data/{}/worker-{}-neat-checkpoint-*'.format(self.config_file_name, worker))))
+        file_list = glob.glob(str(Path('{}/{}/worker-{}-neat-checkpoint-*'.format(self.data_folder, self.config_file_name, worker))))
         if file_list:
-            max_file_num = max([int(item.replace(str(Path('data/{}/worker-{}-neat-checkpoint-'.format(self.config_file_name, worker))), '')) for item in file_list])
+            max_file_num = max([int(item.replace(str(Path('{}/{}/worker-{}-neat-checkpoint-'.format(self.data_folder, self.config_file_name, worker))), '')) for item in file_list])
             self.generation = max_file_num + 1
-            result = str(Path('data/{}/worker-{}-neat-checkpoint-{}'.format(self.config_file_name, worker, max_file_num)))
+            result = str(Path('{}/{}/worker-{}-neat-checkpoint-{}'.format(self.data_folder, self.config_file_name, worker, max_file_num)))
         return result
-
-    def _penalize_for_dying(self, previous_info, current_info):
-        #previous_lives = 2
-        #Don't let mario die!
-        '''current_lives = info['lives']
-        if current_lives < previous_lives:
-            done = True
-            fitness_current = -1
-        previous_lives = current_lives'''
-        #reward = 100001  #This is for testing
-        pass
-
-    def _rewards_score_increase(self, previous_info, current_info):
-        #previous_score = 0
-        '''#Anytime mario gets a powerup (score+=1000), give an extra reward
-        current_score = int(info['score'])
-        #if current_score - previous_score >= 1:
-        if current_score > previous_score:
-            fitness_current += 25
-        previous_score = current_score'''
-        pass
