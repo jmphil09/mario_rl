@@ -2,16 +2,21 @@ import glob
 import pickle
 
 from pathlib import Path
+from shutil import rmtree
 
 from FitnessPlot import FitnessPlot
+from GameRunner import GameRunner
 
+
+DATA_FOLDER_NAME = 'data'
 NUMBER_TO_KEEP = 5
+N = 16
+M = 10
+
 
 def plot_all_values(path_list=glob.glob(str(Path('hyperparam_data/*')))):
     for path in path_list:
         plot = FitnessPlot(folder_prefix=path, num_workers=8)
-        worker_dict = plot.create_worker_dict()
-
         plot.plot_all_workers()
         plot.plot_workers_as_average()
 
@@ -23,8 +28,8 @@ def generate_score_dict():
         score_list_for_worker = []
         files_in_folder = glob.glob(str(Path(path)) + '/*')
         for file in files_in_folder:
-            if Path(file).stem!='config' and Path(file).stem!='config_params':
-        #Calculate average of max values per worker
+            if Path(file).stem != 'config' and Path(file).stem != 'config_params':
+                # Calculate average of max values per worker
                 with open(file, 'rb') as input_file:
                     fitness_list = pickle.load(input_file)
                     fitness_dict = {key: max(value) for (key, value) in fitness_list.items()}
@@ -37,7 +42,7 @@ def generate_score_dict():
 def get_top_performers(n):
     score_dict = generate_score_dict()
     max_keys = sorted(score_dict, key=score_dict.get, reverse=True)[:n]
-    return {key:score_dict[key] for key in max_keys}
+    return {key: score_dict[key] for key in max_keys}
 
 
 def plot_top_performers(n, base_path='hyperparam_data/'):
@@ -47,4 +52,36 @@ def plot_top_performers(n, base_path='hyperparam_data/'):
     plot_all_values(path_list)
 
 
-plot_top_performers(NUMBER_TO_KEEP)
+def copy_top_config(n=1, base_path='hyperparam_data/', config_start_num=0, config_end_num=16):
+    """Copy the top nth config file."""
+    top_performer_dict = get_top_performers(n)
+    top_performer_list = list(top_performer_dict)
+    timestamp = top_performer_list[-1]
+    config_file = Path(base_path + timestamp + '/config')
+
+    with open(config_file, 'r') as orig_config:
+        config_data = orig_config.read()
+        for config_file_name in [Path('config' + '_' + str(worker_num)) for worker_num in range(config_start_num, config_end_num)]:
+            with open(config_file_name, 'w') as fn:
+                fn.write(config_data)
+
+
+#clear the data folder
+def clear_data_dir(dir='data'):
+    try:
+        rmtree(dir)
+    except Exception as ex:
+        print("{} directory does not exist".format(dir))
+        print(ex)
+
+
+def main():
+    clear_data_dir(DATA_FOLDER_NAME)
+    copy_top_config(n=1, base_path='hyperparam_data/', config_start_num=0, config_end_num=N)
+    runner = GameRunner(num_threads=N, show_game=False, max_generation=M)
+    runner.run_all_threads()
+
+
+if __name__ == '__main__':
+    #plot_top_performers(NUMBER_TO_KEEP)
+    main()
