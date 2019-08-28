@@ -118,12 +118,14 @@ gym-super-mario-bros
 *.pkl
 
 # data files
-data*/old/*
-data*/config_*/*
+#data*/old/*
+#data*/config_*/*
 !data*/config_*/*.pkl
+!ongoing_projects/old_data/*/config_*/*.pkl
 !hyperparam_data/*/*
-ongoing_projects/old_data
-ongoing_projects/convolution_test/data_different_conv
 
 # config files
-config_*
+/config_*
+
+# checkpoint files
+*neat-checkpoint-*
