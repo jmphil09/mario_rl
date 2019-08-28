@@ -1,2 +1,0 @@
-1) Plot random hyperparam results as a function of population size. See if there are any small population sizes in the top 20 or so.
-2) Move generated data to external storage with a README on what each data folder is, and whether or not an experiment has been run on it.

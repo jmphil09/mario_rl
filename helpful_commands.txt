@@ -1,6 +1,0 @@
-To see the list of all roms supported (and their name in gym-retro)
-import retro
-print(retro.data.list_games())
-
-To import roms, go to the location of the rom and run:
-python -m retro.import .
