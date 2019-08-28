@@ -1,3 +1,5 @@
+#This class is to run NEATEVOLVE on config files.
+
 import glob
 import retro
 import numpy as np

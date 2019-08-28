@@ -8,11 +8,11 @@ from FitnessPlot import FitnessPlot
 from GameRunner import GameRunner
 
 
-DATA_FOLDER_NAME = 'data_top3'
+DATA_FOLDER_NAME = 'data_top4'
 NUMBER_TO_KEEP = 5
-NUMBER_TO_RUN = 3
-THREAD_START_NUM = 0
-THREAD_END_NUM = 16
+NUMBER_TO_RUN = 4
+THREAD_START_NUM = 16
+THREAD_END_NUM = 32
 N = 16
 M = 25
 

@@ -1,2 +1,2 @@
-1) Record the highest fitness from each run in a text file. Print the text file any time a checkpoint is created.
-2) Write a script to load all checkpoints in a folder and graph the data. (fitness by generation)
+1) Plot random hyperparam results as a function of population size. See if there are any small population sizes in the top 20 or so.
+2) Move generated data to external storage with a README on what each data folder is, and whether or not an experiment has been run on it.
