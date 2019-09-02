@@ -8,13 +8,13 @@ from FitnessPlot import FitnessPlot
 from GameRunner import GameRunner
 
 
-DATA_FOLDER_NAME = 'data_top3'
-NUMBER_TO_KEEP = 5
-NUMBER_TO_RUN = 3
+DATA_FOLDER_NAME = 'data_top1_100gen'
+NUMBER_TO_KEEP = 1
+NUMBER_TO_RUN = 1
 THREAD_START_NUM = 0
-THREAD_END_NUM = 16
-N = 16
-M = 25
+THREAD_END_NUM = 32
+N = 32
+M = 100
 
 
 def plot_all_values(path_list=glob.glob(str(Path('hyperparam_data/*')))):
@@ -86,5 +86,5 @@ def main():
 
 
 if __name__ == '__main__':
-    plot_top_performers(NUMBER_TO_KEEP)
+    #plot_top_performers(NUMBER_TO_KEEP)
     main()

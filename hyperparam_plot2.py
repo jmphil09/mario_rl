@@ -8,9 +8,9 @@ from FitnessPlot import FitnessPlot
 from GameRunner import GameRunner
 
 
-DATA_FOLDER_NAME = 'data_top4'
-NUMBER_TO_KEEP = 5
-NUMBER_TO_RUN = 4
+DATA_FOLDER_NAME = 'data_top6'
+NUMBER_TO_KEEP = 6
+NUMBER_TO_RUN = 6
 THREAD_START_NUM = 16
 THREAD_END_NUM = 32
 N = 16
@@ -86,5 +86,5 @@ def main():
 
 
 if __name__ == '__main__':
-    plot_top_performers(NUMBER_TO_KEEP)
+    #plot_top_performers(NUMBER_TO_KEEP)
     main()
