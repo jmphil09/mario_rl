@@ -6,14 +6,15 @@ from pathlib import Path
 
 
 class FitnessPlot:
-    def __init__(self, config_file_name='config', num_workers=16, folder_prefix='data'):
+    def __init__(self, config_file_name='config', worker_start_num=0, num_workers=16, folder_prefix='data'):
         self.config_file_name = config_file_name
         self.num_workers = num_workers
         self.folder_prefix = folder_prefix
+        self.worker_start_num = worker_start_num
 
     def create_worker_dict(self):
         fitness_dict = {}
-        for n in range(self.num_workers):
+        for n in range(self.worker_start_num, self.num_workers):
             worker_path = str(Path('{}/config_{}/worker-{}-fitness_list.pkl'.format(self.folder_prefix, n, n)))
             #worker_path = str(Path('{}/worker-{}-fitness_list.pkl'.format(self.folder_prefix, n)))
             fitness_list = pickle.load(open(worker_path, 'rb'))
