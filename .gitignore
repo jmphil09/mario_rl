@@ -129,3 +129,5 @@ gym-super-mario-bros
 
 # checkpoint files
 *neat-checkpoint-*
+
+!/complete_models/*
