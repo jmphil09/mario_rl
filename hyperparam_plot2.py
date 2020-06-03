@@ -81,7 +81,7 @@ def clear_data_dir(dir='data'):
 def main():
     clear_data_dir(DATA_FOLDER_NAME)
     copy_top_config(n=NUMBER_TO_RUN, base_path='hyperparam_data/', config_start_num=THREAD_START_NUM, config_end_num=THREAD_END_NUM)
-    runner = GameRunner(num_threads=N, show_game=False, max_generation=M, data_folder=DATA_FOLDER_NAME)
+    runner = GameRunner(num_threads=N, show_game=True, max_generation=M, data_folder=DATA_FOLDER_NAME)
     runner.run_all_threads()
 
 

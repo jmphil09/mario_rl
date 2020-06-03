@@ -56,7 +56,7 @@ class GameRunner:
 
     def run(self, worker_num):
         env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
-        self.config_file_name = '{}_{}'.format(self.config_file_name, worker_num)
+        #self.config_file_name = '{}_{}'.format(self.config_file_name, worker_num)
 
         def eval_genomes(genomes, config):
 
