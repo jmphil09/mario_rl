@@ -55,14 +55,14 @@ def get_top_results(min_result=500):
         #worker_dict = plotter.create_worker_dict()
         worker_dict = plotter.return_avg_worker_dict()
         #print(worker_dict[9])
-        if worker_dict[9] > 800:
+        if worker_dict[9] > min_result:
             result[folder.split('/')[1]] = worker_dict[9]
         #plotter.plot_workers_as_average()
     return result
 
 def get_top_times(top_results):
+    result = {}
     for ts_path in top_results.keys():
-        result = {}
         prefix = str(Path('hyperparam_data/' + ts_path))
         #print(prefix)
         start_time = time.time()
@@ -73,17 +73,20 @@ def get_top_times(top_results):
             convolution_weight=8,
             config_file_name=prefix + '/config',
             worker_start_num=0,
-            max_generation=1,
+            max_generation=10,
             data_folder='test_' + ts_path
         )
         runner.run_all_threads()
         end_time = time.time()
         print('Runtime: {0:01f} seconds'.format(end_time - start_time))
-        result['ts_path'] = '{0:01f}'.format(end_time - start_time)
+        result[ts_path] = ('{0:01f} seconds'.format(end_time - start_time), top_results[ts_path])
     return result
 
 top_results = get_top_results(min_result=800)
+#print(top_results)
 times = get_top_times(top_results)
 
-print('RUNTIMES')
+print('RUNTIMES, SCORES')
 print(times)
+#print('SCORES')
+#print(top_results)
