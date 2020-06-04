@@ -8,9 +8,9 @@ from pathlib import Path
 import time
 
 
-#TODO: get the "best" config. For now just randomize
+# DONE - TODO: get the "best" config. For now just randomize
 
-#Task1: use existing code to plot best config file results. Test the top ~5 and pick the fastest one.
+# DONE - Task1: use existing code to plot best config file results. Test the top ~5 and pick the fastest one.
 #Task2: refactor GameRunner, consider writing server class similar to carm server
 
 '''
@@ -90,3 +90,25 @@ print('RUNTIMES, SCORES')
 print(times)
 #print('SCORES')
 #print(top_results)
+
+'''
+
+RUNTIMES, SCORES
+{
+'1566017738': ('353.255976 seconds', 809.4375),
+'1565252442': ('4239.686366 seconds', 808.0625),
+'1565778890': ('3603.602892 seconds', 814.25),
+'1565920874': ('6430.729112 seconds', 924.6875),
+'1566010103': ('5932.586372 seconds', 981.75),
+'1566080683': ('377.955044 seconds', 819.875),
+'1566019329': ('403.268193 seconds', 854.125),
+'1565775270': ('4813.206977 seconds', 1043.875),
+'1565683053': ('4678.902288 seconds', 862.0625)}
+
+
+
+'1566017738': ('353.255976 seconds', 809.4375),
+'1566080683': ('377.955044 seconds', 819.875),
+'1566019329': ('403.268193 seconds', 854.125),
+
+'''
