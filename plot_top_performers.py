@@ -8,7 +8,7 @@ for n in range(1,6):
     plot.plot_workers_as_average()
 '''
 
-plot = FitnessPlot(folder_prefix='data_top1_100gen', num_workers=32)
+plot = FitnessPlot(folder_prefix='data_top1', num_workers=16)
 worker_dict = plot.create_worker_dict()
 #plot.plot_all_workers()
 #plot.plot_workers_as_average()

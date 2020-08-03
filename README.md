@@ -1,15 +1,12 @@
-# Setup
-- Documentation coming soon
+# Current Task
+Create a new GameRunner class to run multiple levels and sync the results in one main model. Example, instead of training on one level, train on all 32 levels (in parallel!) and then update the model.
 
-# Examples
-- Documentation coming soon
-
-# Current Tasks
-1) Plot random hyperparam results as a function of population size. See if there are any small population sizes in the top 20 or so.
-2) Move generated data to external storage with a README on what each data folder is, and whether or not an experiment has been run on it. (The data not included in this repo is many GB, but some should be kept for further research.)
-3) Finish the main README file :)
-4) Add documentation on hyperparam searching with some data and graphs.
-
+# Other Tasks
+- Add info on how the "good" config files were generated - the config with timestamp 1566017738 is one of the "best"
+- Plot random hyperparam results as a function of population size. See if there are any small population sizes in the top 20 or so.
+- Move generated data to external storage with a README on what each data folder is, and whether or not an experiment has been run on it. (The data not included in this repo is many GB, but some should be kept for further research.)
+- Finish the main README file :)
+- Add documentation on hyperparam searching with some data and graphs.
 
 # Helpful Commands
 To see the list of all roms supported (and their name in gym-retro)
