@@ -5,9 +5,14 @@ import cv2
 import neat
 import pickle
 
+import time
+
 from multiprocessing import Pool
 from pathlib import Path
 
+from nes_py.wrappers import JoypadSpace
+import gym_super_mario_bros
+from gym_super_mario_bros.actions import SIMPLE_MOVEMENT, COMPLEX_MOVEMENT
 
 class GameRunner:
     """
@@ -56,19 +61,36 @@ class GameRunner:
     def run_one_worker(self, worker_num):
         self.run(worker_num)
 
+    def one_hot_encode(self, ls):
+        result = 0 #np.random.randint(0, 12)
+        try:
+            result = ls.index(1.0)
+            print('Got a result')
+            print(ls)
+            time.sleep(10)
+        except:
+            pass
+        return result
+
     def run(self, worker_num):
-        env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
+        #env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
+        env = gym_super_mario_bros.make('SuperMarioBros-1-1-v0')
+        env = JoypadSpace(env, COMPLEX_MOVEMENT)
+        #print(env)
         #self.config_file_name = '{}_{}'.format(self.config_file_name, worker_num)
 
         def eval_genomes(genomes, config):
 
             for genome_id, genome in genomes:
                 obs = env.reset()
+                #print(len(obs))
                 env.action_space.sample()
 
                 input_x, input_y, input_colors = env.observation_space.shape
-                input_x = int(input_x/self.convolution_weight)
-                input_y = int(input_y/self.convolution_weight)
+                #print('Original (x,y): ({},{})'.format(input_x, input_y))
+                input_x = 28#int(input_x/self.convolution_weight)
+                input_y = 30#int(input_y/self.convolution_weight)
+                #print('New (x,y): ({},{})'.format(input_x, input_y))
 
                 net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
 
@@ -92,9 +114,24 @@ class GameRunner:
                     #Reshape input to a 1-d list.
                     imgarray = [num for row in obs for num in row]
 
+                    #There may be an issue with imgarray, the nn_output is always 0
                     nn_output = net.activate(imgarray)
 
+
+                    #print('=================================================')
+                    #print('HELLO')
+                    #print('=================================================')
+                    #print(nn_output)
+                    if nn_output != [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]:
+                        print(nn_output)
+                    nn_output = self.one_hot_encode(nn_output)
+
+                    #print(env.step(nn_output))
                     obs, reward, done, info = env.step(nn_output)
+
+
+
+
 
                     #This reward function gives 1 point every time xscrollLo increases
                     fitness_current += reward
