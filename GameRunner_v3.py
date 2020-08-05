@@ -14,6 +14,10 @@ from nes_py.wrappers import JoypadSpace
 import gym_super_mario_bros
 from gym_super_mario_bros.actions import SIMPLE_MOVEMENT, COMPLEX_MOVEMENT
 
+
+from pprint import saferepr
+
+
 class GameRunner:
     """
     This version of the GameRunner is for running multiple levels simultaneously.
@@ -62,19 +66,20 @@ class GameRunner:
         self.run(worker_num)
 
     def one_hot_encode(self, ls):
-        result = 0 #np.random.randint(0, 12)
-        try:
-            result = ls.index(1.0)
-            print('Got a result')
-            print(ls)
-            time.sleep(10)
-        except:
-            pass
-        return result
+        #result = 0 #np.random.randint(0, 12)
+        #try:
+        #    result = ls.index(1.0)
+        #    #print('Got a result')
+        #    print(ls)
+        #    print(result)
+        #    #time.sleep(10)
+        #except:
+        #    pass
+        return ls.index(max(ls))
 
     def run(self, worker_num):
         #env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
-        env = gym_super_mario_bros.make('SuperMarioBros-1-1-v0')
+        env = gym_super_mario_bros.make('SuperMarioBros-2-1-v0')
         env = JoypadSpace(env, COMPLEX_MOVEMENT)
         #print(env)
         #self.config_file_name = '{}_{}'.format(self.config_file_name, worker_num)
@@ -108,11 +113,25 @@ class GameRunner:
                     frame += 1
 
                     obs = cv2.resize(obs, (input_x, input_y))
+
+
+
                     obs = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
+
+
+                    #cv2.imshow('image', obs)
+                    #cv2.waitKey(0)
+
+
                     obs = np.reshape(obs, (input_x, input_y))
+
+                    #cv2.imshow('image', obs)
+                    #cv2.waitKey(0)
 
                     #Reshape input to a 1-d list.
                     imgarray = [num for row in obs for num in row]
+
+                    #print(imgarray)
 
                     #There may be an issue with imgarray, the nn_output is always 0
                     nn_output = net.activate(imgarray)
@@ -122,20 +141,22 @@ class GameRunner:
                     #print('HELLO')
                     #print('=================================================')
                     #print(nn_output)
-                    if nn_output != [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]:
-                        print(nn_output)
+                    #if nn_output != [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]:
+                    #    print(nn_output)
                     nn_output = self.one_hot_encode(nn_output)
 
                     #print(env.step(nn_output))
                     obs, reward, done, info = env.step(nn_output)
+                    #print(reward)
 
 
 
 
 
                     #This reward function gives 1 point every time xscrollLo increases
+                    #if reward > 0:
                     fitness_current += reward
-
+                    #print('fitness_current, current_max_fitness: ({}, {})'.format(fitness_current, current_max_fitness))
                     #Replace the RHS with the xscrollLo value at the end of the level
                     #or end of the game
                     if fitness_current > self.level_end_score:
@@ -151,7 +172,11 @@ class GameRunner:
                     if done or frame_counter == 250:
                         done = True
 
-                    genome.fitness = fitness_current
+                    #TODO: try genome.fitness = float(fitness_current)
+                    genome.fitness = float(fitness_current)
+                    #genome.fitness = float(max(fitness_current, 0))
+                    assert isinstance(genome.fitness, (int, float)), "Genome.fitness ({0!s}): type {1!s}, not int/float".format(saferepr(genome.fitness), type(genome.fitness))
+                    #print('genome.fitness: {}'.format(genome.fitness))
 
                 self.fitness_scores_for_generation.append(fitness_current)
 
