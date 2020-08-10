@@ -60,26 +60,23 @@ class GameRunner:
 
     def run_all_threads(self):
         p = Pool(processes=self.num_threads)
-        p.map(self.run, tuple(range(self.worker_start_num, self.worker_start_num + self.num_threads)))
+        worker_range = range(self.worker_start_num, self.worker_start_num + self.num_threads)
+        worker_levels = ['SuperMarioBros-' + str(world) + '-' + str(level) + '-v0' for world in range(1, 9) for level in range(1, 5)]
+        #print('=========')
+        #print(tuple(zip(worker_range, worker_levels)))
+        p.map(self.run, tuple(zip(worker_range, worker_levels)))
 
     def run_one_worker(self, worker_num):
         self.run(worker_num)
 
     def one_hot_encode(self, ls):
-        #result = 0 #np.random.randint(0, 12)
-        #try:
-        #    result = ls.index(1.0)
-        #    #print('Got a result')
-        #    print(ls)
-        #    print(result)
-        #    #time.sleep(10)
-        #except:
-        #    pass
         return ls.index(max(ls))
 
-    def run(self, worker_num):
+    def run(self, map_args):
+        worker_num = map_args[0]
+        level = map_args[1]
         #env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
-        env = gym_super_mario_bros.make('SuperMarioBros-2-1-v0')
+        env = gym_super_mario_bros.make(level)
         env = JoypadSpace(env, COMPLEX_MOVEMENT)
         #print(env)
         #self.config_file_name = '{}_{}'.format(self.config_file_name, worker_num)

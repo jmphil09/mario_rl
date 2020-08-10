@@ -2,7 +2,7 @@ from GameRunner_v3 import GameRunner
 
 
 runner = GameRunner(
-    num_threads=1,
+    num_threads=32,
     show_game=True,
     show_nn_view=False,
     level_end_score=3186,
