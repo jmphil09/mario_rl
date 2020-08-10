@@ -1,3 +1,7 @@
+## Here is a 10 second snapshot of training on all 32 levels in parallel.
+![training](https://github.com/jmphil09/mario_rl/blob/master/training_gif1.gif)
+![training](https://github.com/jmphil09/mario_rl/blob/master/training_gif2.gif)
+
 # Current Task
 Create a new GameRunner class to run multiple levels and sync the results in one main model. Example, instead of training on one level, train on all 32 levels (in parallel!) and then update the model.
 
