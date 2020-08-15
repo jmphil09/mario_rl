@@ -72,174 +72,155 @@ class GameRunner:
     def one_hot_encode(self, ls):
         return ls.index(max(ls))
 
+
+
+
+'''
+Outline:
+- Load the "main" NN model - can use a config file or base model for this
+- Create a "random" set of genomes/species of the model
+Until finished:
+- Use the set of genomes/species
+- Create a tuple of the form (all_levels, all_NN_variants)
+- In parallel - run 1 episode on each worker (worker=core) over one of the tuples
+- An episode gives a reward
+- After all episodes are complete, gather results of the form dict: {NN_variant:(average of rewards on all levels)}
+- Run the "breeding" algorithm on the results to create a new set of genomes/species
+'''
+
+
+
+
+
+
+
+    def run_episode():
+
+
+
+
+
+
+
+
+
+
+
+
     def run(self, map_args):
         worker_num = map_args[0]
         level = map_args[1]
-        #env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
         env = gym_super_mario_bros.make(level)
         env = JoypadSpace(env, COMPLEX_MOVEMENT)
-        #print(env)
-        #self.config_file_name = '{}_{}'.format(self.config_file_name, worker_num)
-
-        def eval_genomes(genomes, config):
-
-            for genome_id, genome in genomes:
-                obs = env.reset()
-                #print(len(obs))
-                env.action_space.sample()
-
-                input_x, input_y, input_colors = env.observation_space.shape
-                #print('Original (x,y): ({},{})'.format(input_x, input_y))
-                input_x = 28#int(input_x/self.convolution_weight)
-                input_y = 30#int(input_y/self.convolution_weight)
-                #print('New (x,y): ({},{})'.format(input_x, input_y))
-
-                net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
-
-                current_max_fitness = 0
-                fitness_current = 0
-                frame = 0
-                frame_counter = 0
-
-                done = False
-
-                while not done:
-
-                    if self.show_game:
-                        env.render()
-                    frame += 1
-
-                    obs = cv2.resize(obs, (input_x, input_y))
 
 
+    def eval_genomes(genomes, config):
 
-                    obs = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
+        for genome_id, genome in genomes:
+            obs = env.reset()
+            #print(len(obs))
+            env.action_space.sample()
+
+            input_x, input_y, input_colors = env.observation_space.shape
+            #print('Original (x,y): ({},{})'.format(input_x, input_y))
+            input_x = 28#int(input_x/self.convolution_weight)
+            input_y = 30#int(input_y/self.convolution_weight)
+            #print('New (x,y): ({},{})'.format(input_x, input_y))
+
+            net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
+
+            current_max_fitness = 0
+            fitness_current = 0
+            frame = 0
+            frame_counter = 0
+
+            done = False
+
+            while not done:
+
+                if self.show_game:
+                    env.render()
+                frame += 1
+
+                obs = cv2.resize(obs, (input_x, input_y))
 
 
-                    #cv2.imshow('image', obs)
-                    #cv2.waitKey(0)
+
+                obs = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
 
 
-                    obs = np.reshape(obs, (input_x, input_y))
-
-                    #cv2.imshow('image', obs)
-                    #cv2.waitKey(0)
-
-                    #Reshape input to a 1-d list.
-                    imgarray = [num for row in obs for num in row]
-
-                    #print(imgarray)
-
-                    #There may be an issue with imgarray, the nn_output is always 0
-                    nn_output = net.activate(imgarray)
+                #cv2.imshow('image', obs)
+                #cv2.waitKey(0)
 
 
-                    #print('=================================================')
-                    #print('HELLO')
-                    #print('=================================================')
-                    #print(nn_output)
-                    #if nn_output != [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]:
-                    #    print(nn_output)
-                    nn_output = self.one_hot_encode(nn_output)
+                obs = np.reshape(obs, (input_x, input_y))
 
-                    #print(env.step(nn_output))
-                    obs, reward, done, info = env.step(nn_output)
-                    #print(reward)
+                #cv2.imshow('image', obs)
+                #cv2.waitKey(0)
 
+                #Reshape input to a 1-d list.
+                imgarray = [num for row in obs for num in row]
+
+                #print(imgarray)
+
+                #There may be an issue with imgarray, the nn_output is always 0
+                nn_output = net.activate(imgarray)
+
+
+                #print('=================================================')
+                #print('HELLO')
+                #print('=================================================')
+                #print(nn_output)
+                #if nn_output != [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]:
+                #    print(nn_output)
+                nn_output = self.one_hot_encode(nn_output)
+
+                #print(env.step(nn_output))
+                obs, reward, done, info = env.step(nn_output)
+                #print(reward)
 
 
 
 
-                    #This reward function gives 1 point every time xscrollLo increases
-                    #if reward > 0:
-                    fitness_current += reward
-                    #print('fitness_current, current_max_fitness: ({}, {})'.format(fitness_current, current_max_fitness))
-                    #Replace the RHS with the xscrollLo value at the end of the level
-                    #or end of the game
-                    if fitness_current > self.level_end_score:
-                        fitness_current += 100000
-                        done = True
 
-                    if fitness_current > current_max_fitness:
-                        current_max_fitness = fitness_current
-                        frame_counter = 0
-                    else:
-                        frame_counter += 1
+                #This reward function gives 1 point every time xscrollLo increases
+                #if reward > 0:
+                fitness_current += reward
+                #print('fitness_current, current_max_fitness: ({}, {})'.format(fitness_current, current_max_fitness))
+                #Replace the RHS with the xscrollLo value at the end of the level
+                #or end of the game
+                if fitness_current > self.level_end_score:
+                    fitness_current += 100000
+                    done = True
 
-                    if done or frame_counter == 250:
-                        done = True
+                if fitness_current > current_max_fitness:
+                    current_max_fitness = fitness_current
+                    frame_counter = 0
+                else:
+                    frame_counter += 1
 
-                    #TODO: try genome.fitness = float(fitness_current)
-                    genome.fitness = float(fitness_current)
-                    #genome.fitness = float(max(fitness_current, 0))
-                    assert isinstance(genome.fitness, (int, float)), "Genome.fitness ({0!s}): type {1!s}, not int/float".format(saferepr(genome.fitness), type(genome.fitness))
-                    #print('genome.fitness: {}'.format(genome.fitness))
+                if done or frame_counter == 250:
+                    done = True
 
-                self.fitness_scores_for_generation.append(fitness_current)
+                #TODO: try genome.fitness = float(fitness_current)
+                genome.fitness = float(fitness_current)
+                #genome.fitness = float(max(fitness_current, 0))
+                assert isinstance(genome.fitness, (int, float)), "Genome.fitness ({0!s}): type {1!s}, not int/float".format(saferepr(genome.fitness), type(genome.fitness))
+                #print('genome.fitness: {}'.format(genome.fitness))
 
-            fitness_list_filename = Path('{}/{}/worker-{}-fitness_list.pkl'.format(self.data_folder, self.config_file_name, worker_num))
+            self.fitness_scores_for_generation.append(fitness_current)
 
-            try:
-                with open(fitness_list_filename, 'rb') as input_file:
-                    self.fitness_dict = pickle.load(input_file)
-            except:
-                    self.fitness_dict = {}
+        fitness_list_filename = Path('{}/{}/worker-{}-fitness_list.pkl'.format(self.data_folder, self.config_file_name, worker_num))
 
-            with open(fitness_list_filename, 'wb') as output:
-                self.fitness_dict[self.generation] = self.fitness_scores_for_generation
-                pickle.dump(self.fitness_dict, output, 1)
+        try:
+            with open(fitness_list_filename, 'rb') as input_file:
+                self.fitness_dict = pickle.load(input_file)
+        except:
                 self.fitness_dict = {}
-                self.fitness_scores_for_generation = []
-                self.generation += 1
 
-        config = neat.Config(
-            neat.DefaultGenome,
-            neat.DefaultReproduction,
-            neat.DefaultSpeciesSet,
-            neat.DefaultStagnation,
-            self.config_file_name
-        )
-
-        #Load population checkpoint if one exists
-        latest_checkpoint = self._get_latest_checkpoint(worker_num)
-        if latest_checkpoint:
-            p = neat.Checkpointer.restore_checkpoint(latest_checkpoint)
-            print('Loaded population checkpoint: {}'.format(latest_checkpoint))
-        else:
-            p = neat.Population(config)
-            print('No population checkpoint found, creating new population.')
-
-        #Show reporting statistics
-        p.add_reporter(neat.StdOutReporter(True))
-        stats = neat.StatisticsReporter()
-        p.add_reporter(stats)
-        #Create a checkpoint of the NN
-        checkpoint_filename = Path('{}/{}/worker-{}-neat-checkpoint-'.format(self.data_folder, self.config_file_name, worker_num))
-        save_dir = checkpoint_filename.parent
-        save_dir.mkdir(parents=True, exist_ok=True)
-        p.add_reporter(
-            neat.Checkpointer(
-                generation_interval=1,
-                time_interval_seconds=300,
-                filename_prefix=checkpoint_filename
-            )
-        )
-
-        winner = p.run(eval_genomes, n=self.max_generation)
-
-        #Save the winner
-        pickle_name = Path('{}/{}/complete_models/winner{}.pkl'.format(self.data_folder, self.config_file_name, worker_num))
-        pickle_dir = pickle_name.parent
-        pickle_dir.mkdir(parents=True, exist_ok=True)
-        with open(pickle_name, 'wb') as output:
-            pickle.dump(winner, output, 1)
-
-    #helper functions
-    def _get_latest_checkpoint(self, worker):
-        result = None
-        file_list = glob.glob(str(Path('{}/{}/worker-{}-neat-checkpoint-*'.format(self.data_folder, self.config_file_name, worker))))
-        if file_list:
-            max_file_num = max([int(item.replace(str(Path('{}/{}/worker-{}-neat-checkpoint-'.format(self.data_folder, self.config_file_name, worker))), '')) for item in file_list])
-            self.generation = max_file_num
-            result = str(Path('{}/{}/worker-{}-neat-checkpoint-{}'.format(self.data_folder, self.config_file_name, worker, max_file_num)))
-        return result
+        with open(fitness_list_filename, 'wb') as output:
+            self.fitness_dict[self.generation] = self.fitness_scores_for_generation
+            pickle.dump(self.fitness_dict, output, 1)
+            self.fitness_dict = {}
+            self.fitness_scores_for_generation = []
+            self.generation += 1
