@@ -75,19 +75,26 @@ class GameRunner:
 
 
 
-'''
-Outline:
-- Load the "main" NN model - can use a config file or base model for this
-- Create a "random" set of genomes/species of the model
-Until finished:
-- Use the set of genomes/species
-- Create a tuple of the form (all_levels, all_NN_variants)
-- In parallel - run 1 episode on each worker (worker=core) over one of the tuples
-- An episode gives a reward
-- After all episodes are complete, gather results of the form dict: {NN_variant:(average of rewards on all levels)}
-- Run the "breeding" algorithm on the results to create a new set of genomes/species
-'''
+    '''
+    Outline:
+    - Load the "main" NN model - can use a config file or base model for this
+    - Create a "random" set of genomes/species of the model
+    Until finished:
+    - Use the set of genomes/species
+    - Create a tuple of the form (all_levels, all_NN_variants)
+    - In parallel - run 1 episode on each worker (worker=core) over one of the tuples
+    - An episode gives a reward
+    - After all episodes are complete, gather results of the form dict: {NN_variant:(average of rewards on all levels)}
+    - Run the "breeding" algorithm on the results to create a new set of genomes/species
+    '''
 
+
+    '''
+    TODO:
+    - Implement a function to show current progress. Do this by loading the most current model and running the highest
+    score genome/species for each level.
+    - Implement automated hyperparameter search (similar to ConfigGenerator class)
+    '''
 
 
 
@@ -95,7 +102,7 @@ Until finished:
 
 
     def run_episode():
-
+        pass
 
 
 
