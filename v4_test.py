@@ -12,9 +12,9 @@ runner = GameRunner(
     show_game=False,
     level_end_score=3186,
     convolution_weight=8,
-    config_file_name='good_config',
+    config_file_name='config_1566017738',
     worker_start_num=0,
-    max_generation=10,
+    max_generation=100,
     data_folder='data_v4_test'
 )
 

@@ -63,92 +63,12 @@ class GameRunner:
 
 
 
-    def eval_single_genome(self, worker_num, genomes):
-        config = self.config
-        for genome_id, genome in genomes:
 
+    def show_top_n(self, n):
+
+
+        def show_genomes(genomes, config):
             env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
-            obs = env.reset()
-            env.action_space.sample()
-
-            input_x, input_y, input_colors = env.observation_space.shape
-            input_x = int(input_x/self.convolution_weight)
-            input_y = int(input_y/self.convolution_weight)
-
-            net = neat.nn.recurrent.RecurrentNetwork.create(genome, self.config)
-
-            current_max_fitness = 0
-            fitness_current = 0
-            frame = 0
-            frame_counter = 0
-
-            done = False
-
-            while not done:
-
-                if self.show_game:
-                    env.render()
-                    #env.close()
-                frame += 1
-
-                obs = cv2.resize(obs, (input_x, input_y))
-                obs = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
-                obs = np.reshape(obs, (input_x, input_y))
-
-                #Reshape input to a 1-d list.
-                imgarray = [num for row in obs for num in row]
-
-                nn_output = net.activate(imgarray)
-
-                obs, reward, done, info = env.step(nn_output)
-
-                #This reward function gives 1 point every time xscrollLo increases
-                fitness_current += reward
-
-                #Replace the RHS with the xscrollLo value at the end of the level
-                #or end of the game
-                if fitness_current > self.level_end_score:
-                    fitness_current += 100000
-                    done = True
-
-                if fitness_current > current_max_fitness:
-                    current_max_fitness = fitness_current
-                    frame_counter = 0
-                else:
-                    frame_counter += 1
-
-                if done or frame_counter == 250:
-                    done = True
-
-                genome.fitness = fitness_current
-            print('TODO: SAVE FITNESS SCORES HERE ({}, {}): {}'.format(genome_id, 'genome', fitness_current))
-            env.close()
-
-
-
-    def run(self, worker_num):
-        #env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
-
-        def eval_genomes(genomes, config):
-            '''
-            # Split primes into num_cores even segments
-            random.shuffle(self.primes_to_check)
-            n = self.num_cores - 1
-            n_list_size = int(len(self.primes_to_check) / self.num_cores)
-            split_primes = np.array_split(self.p1_primes_to_check, self.num_cores)
-            print([len(item) for item in split_primes])
-
-            p = Pool(processes=self.num_cores)
-            p.starmap(self._generate_3carm, [[i, split_primes[i]] for i in range(0, self.num_cores)])
-            '''
-
-
-            self.config = config
-            split_genomes = np.array_split(genomes, self.num_threads)
-            p = Pool(processes=self.num_threads)
-            p.starmap(self.eval_single_genome, [[i, (split_genomes[i])] for i in range(0, self.num_threads)])
-            print('TODO: UPDATE FITNESS SCORES HERE')
-            '''
             for genome_id, genome in genomes:
                 obs = env.reset()
                 env.action_space.sample()
@@ -201,26 +121,137 @@ class GameRunner:
                     if done or frame_counter == 250:
                         done = True
 
-                    genome.fitness = fitness_current
-            '''
-            '''
-                self.fitness_scores_for_generation.append(fitness_current)
+        #Load population checkpoint if one exists
+        latest_checkpoint = self._get_latest_checkpoint(worker_num)
+        if latest_checkpoint:
+            pickle_file = latest_checkpoint
 
-            fitness_list_filename = Path('{}/{}/worker-{}-fitness_list.pkl'.format(self.data_folder, self.config_file_name, worker_num))
+            #Update the generation because the implementation in neat-python has a bug
+            generation = int(latest_checkpoint.split('-')[-1]) + 1
+            with gzip.open(pickle_file) as f:
+                contents = pickle.load(f)
+                new_tuple = list(contents)
+                new_tuple[0] = generation
+                new_tuple = tuple(new_tuple)
 
-            try:
-                with open(fitness_list_filename, 'rb') as input_file:
-                    self.fitness_dict = pickle.load(input_file)
-            except:
-                    self.fitness_dict = {}
+            with gzip.open(pickle_file, 'w', compresslevel=5) as f:
+                data = new_tuple
+                pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-            with open(fitness_list_filename, 'wb') as output:
-                self.fitness_dict[self.generation] = self.fitness_scores_for_generation
-                pickle.dump(self.fitness_dict, output, 1)
-                self.fitness_dict = {}
-                self.fitness_scores_for_generation = []
-                self.generation += 1
-        '''
+            p = neat.Checkpointer.restore_checkpoint(latest_checkpoint)
+            print('Loaded population checkpoint: {}'.format(latest_checkpoint))
+        else:
+            p = neat.Population(config)
+            print('No population checkpoint found, creating new population.')
+
+        #Show reporting statistics
+        p.add_reporter(neat.StdOutReporter(True))
+        stats = neat.StatisticsReporter()
+        p.add_reporter(stats)
+        #Create a checkpoint of the NN
+        checkpoint_filename = Path('{}/{}/worker-{}-neat-checkpoint-'.format(self.data_folder, self.config_file_name, worker_num))
+        save_dir = checkpoint_filename.parent
+        save_dir.mkdir(parents=True, exist_ok=True)
+        p.add_reporter(
+            neat.Checkpointer(
+                generation_interval=1,
+                time_interval_seconds=300,
+                filename_prefix=checkpoint_filename
+            )
+        )
+
+        winner = p.run(show_genomes, n=self.max_generation)
+
+
+
+
+    def eval_single_genome(self, worker_num, genome_list):
+        result = set()
+        env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
+        #obs = env.reset()
+        env.action_space.sample()
+        for genome_id, genome in genome_list:
+
+            #env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
+            obs = env.reset()
+            env.action_space.sample()
+
+            input_x, input_y, input_colors = env.observation_space.shape
+            input_x = int(input_x/self.convolution_weight)
+            input_y = int(input_y/self.convolution_weight)
+
+            net = neat.nn.recurrent.RecurrentNetwork.create(genome, self.config)
+
+            current_max_fitness = 0
+            fitness_current = 0
+            frame = 0
+            frame_counter = 0
+
+            done = False
+
+            while not done:
+
+                if self.show_game:
+                    env.render()
+                    #env.close()
+                frame += 1
+
+                obs = cv2.resize(obs, (input_x, input_y))
+                obs = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
+                obs = np.reshape(obs, (input_x, input_y))
+
+                #Reshape input to a 1-d list.
+                imgarray = [num for row in obs for num in row]
+
+                nn_output = net.activate(imgarray)
+
+                obs, reward, done, info = env.step(nn_output)
+
+                #This reward function gives 1 point every time xscrollLo increases
+                fitness_current += reward
+                #if fitness_current > 199:
+                #    print(fitness_current)
+
+                #Replace the RHS with the xscrollLo value at the end of the level
+                #or end of the game
+                if fitness_current > self.level_end_score:
+                    fitness_current += 100000
+                    done = True
+
+                if fitness_current > current_max_fitness:
+                    current_max_fitness = fitness_current
+                    frame_counter = 0
+                else:
+                    frame_counter += 1
+
+                if done or frame_counter == 250:
+                    done = True
+                #env.close()
+
+                genome.fitness = fitness_current
+            result.add((genome_id, genome, fitness_current))
+            #print('TODO: SAVE FITNESS SCORES HERE ({}, {}): {}'.format(genome_id, 'genome', fitness_current))
+        env.close()
+        return result#(genome_id, genome, fitness_current)
+
+
+
+    def run(self, worker_num):
+        #env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
+
+        def eval_genomes(genomes, config):
+            split_genomes = np.array_split(genomes, self.num_threads)
+            p = Pool(processes=self.num_threads)
+            genome_results = p.starmap(self.eval_single_genome, [[i, (split_genomes[i])] for i in range(0, self.num_threads)])
+            genome_result_list = [item for sublist in genome_results for item in sublist]
+            genome_result_dict = {item[0]: (item[1], item[2]) for item in genome_result_list}
+
+            for genome_id, genome in genomes:
+                #genome = genome_result_dict[genome_id][0]
+                genome.fitness = genome_result_dict[genome_id][1]
+                #if genome_result_dict[genome_id][1] > 200:
+                    #print(genome_result_dict[genome_id][1])
+
         config = neat.Config(
             neat.DefaultGenome,
             neat.DefaultReproduction,
@@ -228,6 +259,7 @@ class GameRunner:
             neat.DefaultStagnation,
             self.config_file_name
         )
+        self.config = config
 
         #Load population checkpoint if one exists
         latest_checkpoint = self._get_latest_checkpoint(worker_num)
