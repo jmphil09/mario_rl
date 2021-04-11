@@ -51,22 +51,104 @@ class GameRunner:
         self.fitness_scores_for_generation = []
         self.fitness_dict = {}
         self.generation = 0
+        self.config = None
 
     def run_all_threads(self):
-        p = Pool(processes=self.num_threads)
-        p.map(self.run, tuple(range(self.worker_start_num, self.worker_start_num + self.num_threads)))
+        #p = Pool(processes=self.num_threads)
+        #p.map(self.run, tuple(range(self.worker_start_num, self.worker_start_num + self.num_threads)))
+        self.run(0)
 
     def run_one_worker(self, worker_num):
         self.run(worker_num)
 
+
+
+    def eval_single_genome(self, worker_num, genomes):
+        config = self.config
+        for genome_id, genome in genomes:
+
+            env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
+            obs = env.reset()
+            env.action_space.sample()
+
+            input_x, input_y, input_colors = env.observation_space.shape
+            input_x = int(input_x/self.convolution_weight)
+            input_y = int(input_y/self.convolution_weight)
+
+            net = neat.nn.recurrent.RecurrentNetwork.create(genome, self.config)
+
+            current_max_fitness = 0
+            fitness_current = 0
+            frame = 0
+            frame_counter = 0
+
+            done = False
+
+            while not done:
+
+                if self.show_game:
+                    env.render()
+                    #env.close()
+                frame += 1
+
+                obs = cv2.resize(obs, (input_x, input_y))
+                obs = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
+                obs = np.reshape(obs, (input_x, input_y))
+
+                #Reshape input to a 1-d list.
+                imgarray = [num for row in obs for num in row]
+
+                nn_output = net.activate(imgarray)
+
+                obs, reward, done, info = env.step(nn_output)
+
+                #This reward function gives 1 point every time xscrollLo increases
+                fitness_current += reward
+
+                #Replace the RHS with the xscrollLo value at the end of the level
+                #or end of the game
+                if fitness_current > self.level_end_score:
+                    fitness_current += 100000
+                    done = True
+
+                if fitness_current > current_max_fitness:
+                    current_max_fitness = fitness_current
+                    frame_counter = 0
+                else:
+                    frame_counter += 1
+
+                if done or frame_counter == 250:
+                    done = True
+
+                genome.fitness = fitness_current
+            print('TODO: SAVE FITNESS SCORES HERE ({}, {}): {}'.format(genome_id, 'genome', fitness_current))
+            env.close()
+
+
+
     def run(self, worker_num):
-        env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
-        #level = 'SuperMarioBros-1-1-v0'
-        #env = gym_super_mario_bros.make(level)
-        #self.config_file_name = '{}_{}'.format(self.config_file_name, worker_num)
+        #env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
 
         def eval_genomes(genomes, config):
+            '''
+            # Split primes into num_cores even segments
+            random.shuffle(self.primes_to_check)
+            n = self.num_cores - 1
+            n_list_size = int(len(self.primes_to_check) / self.num_cores)
+            split_primes = np.array_split(self.p1_primes_to_check, self.num_cores)
+            print([len(item) for item in split_primes])
 
+            p = Pool(processes=self.num_cores)
+            p.starmap(self._generate_3carm, [[i, split_primes[i]] for i in range(0, self.num_cores)])
+            '''
+
+
+            self.config = config
+            split_genomes = np.array_split(genomes, self.num_threads)
+            p = Pool(processes=self.num_threads)
+            p.starmap(self.eval_single_genome, [[i, (split_genomes[i])] for i in range(0, self.num_threads)])
+            print('TODO: UPDATE FITNESS SCORES HERE')
+            '''
             for genome_id, genome in genomes:
                 obs = env.reset()
                 env.action_space.sample()
@@ -120,7 +202,8 @@ class GameRunner:
                         done = True
 
                     genome.fitness = fitness_current
-
+            '''
+            '''
                 self.fitness_scores_for_generation.append(fitness_current)
 
             fitness_list_filename = Path('{}/{}/worker-{}-fitness_list.pkl'.format(self.data_folder, self.config_file_name, worker_num))
@@ -137,7 +220,7 @@ class GameRunner:
                 self.fitness_dict = {}
                 self.fitness_scores_for_generation = []
                 self.generation += 1
-
+        '''
         config = neat.Config(
             neat.DefaultGenome,
             neat.DefaultReproduction,
