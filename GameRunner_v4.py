@@ -64,12 +64,101 @@ class GameRunner:
 
 
 
+    def play(self, completed_model):
+        env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
+        obs = env.reset()
+        env.action_space.sample()
+
+        input_x, input_y, input_colors = env.observation_space.shape
+        input_x = int(input_x/self.convolution_weight)
+        input_y = int(input_y/self.convolution_weight)
+
+        config = neat.Config(
+            neat.DefaultGenome,
+            neat.DefaultReproduction,
+            neat.DefaultSpeciesSet,
+            neat.DefaultStagnation,
+            self.config_file_name
+        )
+
+        net = neat.nn.recurrent.RecurrentNetwork.create(completed_model, config)
+
+        show_game = True
+        done = False
+
+        current_max_fitness = 0
+        fitness_current = 0
+        frame = 0
+        frame_counter = 0
+
+        while not done:
+
+            if show_game:
+                env.render()
+            frame += 1
+
+            obs = cv2.resize(obs, (input_x, input_y))
+            obs = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
+            obs = np.reshape(obs, (input_x, input_y))
+
+            #Reshape input to a 1-d list.
+            imgarray = [num for row in obs for num in row]
+
+            nn_output = net.activate(imgarray)
+
+            obs, reward, done, info = env.step(nn_output)
+
+            #This reward function gives 1 point every time xscrollLo increases
+            fitness_current += reward
+
+            #Replace the RHS with the xscrollLo value at the end of the level
+            #or end of the game
+            if fitness_current > self.level_end_score:
+                #fitness_current += 100000
+                #done = True
+                pass
+
+            if fitness_current > current_max_fitness:
+                current_max_fitness = fitness_current
+                frame_counter = 0
+            else:
+                frame_counter += 1
+
+            if done or frame_counter == 250:
+                #done = True
+                pass
+
+
+
+
+
     def show_top_n(self, n):
+        worker_num = 0
 
 
         def show_genomes(genomes, config):
-            env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
+            #print(genomes)
+            top_genomes = []
+            top_genome_id_list = []
             for genome_id, genome in genomes:
+                #create genome list and sort it
+                top_genome_id_list.append((genome_id, genome.fitness if genome.fitness else 0))
+
+            top_genome_id_list = sorted(top_genome_id_list, key=lambda x: x[-1], reverse=True)[0:n]
+            #top_genome_id_list.sort(key=lambda x: x[-1], reverse=True)
+
+            #print(test)
+            #print(top_genome_id_list)
+            top_ids = [x1 for (x1, x2) in top_genome_id_list]
+            top_genomes = [(genome_id, genome) for (genome_id, genome) in genomes if genome_id in top_ids]
+
+            print(top_genome_id_list)
+            print(top_genomes)
+
+            #assert 1==0
+
+            env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
+            for genome_id, genome in top_genomes:
                 obs = env.reset()
                 env.action_space.sample()
 
@@ -84,11 +173,12 @@ class GameRunner:
                 frame = 0
                 frame_counter = 0
 
+                show_game = True
                 done = False
 
                 while not done:
 
-                    if self.show_game:
+                    if show_game:
                         env.render()
                     frame += 1
 
@@ -144,6 +234,11 @@ class GameRunner:
             p = neat.Population(config)
             print('No population checkpoint found, creating new population.')
 
+
+        #print(p)
+        p.run(show_genomes)
+
+        '''
         #Show reporting statistics
         p.add_reporter(neat.StdOutReporter(True))
         stats = neat.StatisticsReporter()
@@ -161,6 +256,7 @@ class GameRunner:
         )
 
         winner = p.run(show_genomes, n=self.max_generation)
+        '''
 
 
 
@@ -237,7 +333,6 @@ class GameRunner:
 
 
     def run(self, worker_num):
-        #env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
 
         def eval_genomes(genomes, config):
             split_genomes = np.array_split(genomes, self.num_threads)
@@ -247,10 +342,7 @@ class GameRunner:
             genome_result_dict = {item[0]: (item[1], item[2]) for item in genome_result_list}
 
             for genome_id, genome in genomes:
-                #genome = genome_result_dict[genome_id][0]
                 genome.fitness = genome_result_dict[genome_id][1]
-                #if genome_result_dict[genome_id][1] > 200:
-                    #print(genome_result_dict[genome_id][1])
 
         config = neat.Config(
             neat.DefaultGenome,
