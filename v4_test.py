@@ -9,36 +9,30 @@ from GameRunner_v4 import GameRunner
 
 
 runner = GameRunner(
-    num_threads=32,
+    num_threads=16,
     show_game=False,
     level_end_score=3186,
     convolution_weight=8,
     config_file_name='config_generated',
     worker_start_num=0,
-    max_generation=100,
+    #max_generation=1,
     data_folder='data_v4_test'
 )
 
-#runner.run_all_threads()
+runner.run_all_threads()
 
 # ======================================================================
 # Test the model DURING training
-runner.show_top_n(3)
+#runner.show_top_n(3)
 # ======================================================================
 
 # ======================================================================
-# Test the model after training
-'''
-import pickle
+# Test the model AFTER training
 
-winner = 'complete_models/winner31.pkl'
+#pth = 'complete_models/winner31.pkl'
+#runner.play(completed_model_path=pth)
+#runner.play()
 
-winfile = pickle.load(open(winner, 'rb'))
-print(winfile)
-
-
-runner.play(winfile)
-'''
 # ======================================================================
 
 # ======================================================================
