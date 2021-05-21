@@ -4,6 +4,7 @@ import gzip
 import neat
 import pickle
 import retro
+import time
 
 import numpy as np
 
@@ -22,6 +23,7 @@ class GameRunner:
         convolution_weight (int): Factor used to scale the image down before feeding it to the Neural Network
         config_file_name (str): The prefix to use for the config file
         worker_start_num (int): The cpu core number to start with
+        max_framerate (int): The maximum framerate during playback
     """
     def __init__(
         self,
@@ -33,7 +35,8 @@ class GameRunner:
         config_file_name='config',
         worker_start_num=0,
         max_generation=200,
-        data_folder='data'
+        data_folder='data',
+        max_framerate=60
     ):
         self.num_threads = num_threads
         self.show_game = show_game
@@ -44,6 +47,7 @@ class GameRunner:
         self.worker_start_num = worker_start_num
         self.max_generation = max_generation
         self.data_folder = data_folder
+        self.max_framerate = max_framerate
 
         self.fitness_scores_for_generation = []
         self.fitness_dict = {}
@@ -143,9 +147,15 @@ class GameRunner:
                 show_game = True
                 done = False
 
+                end_ts = time.time_ns() // 1_000_000
                 while not done:
+                    start_ts = time.time_ns() // 1_000_000
 
                     if show_game:
+                        while end_ts - start_ts <= 1000 / self.max_framerate:
+                            #print('end_ts: {}, start_ts: {}, diff: {}'.format(end_ts, start_ts, end_ts - start_ts))
+                            time.sleep(.001)
+                            end_ts = time.time_ns() // 1_000_000
                         env.render()
                     frame += 1
 
@@ -177,6 +187,7 @@ class GameRunner:
 
                     if done or frame_counter == 250:
                         done = True
+                    end_ts = time.time_ns() // 1_000_000
 
         #Load population checkpoint if one exists
         latest_checkpoint = self._get_latest_checkpoint(worker_num)
