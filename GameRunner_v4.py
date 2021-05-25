@@ -24,6 +24,7 @@ class GameRunner:
         config_file_name (str): The prefix to use for the config file
         worker_start_num (int): The cpu core number to start with
         max_framerate (int): The maximum framerate during playback
+        max_runtime (int): The maximum number of seconds to continue training
     """
     def __init__(
         self,
@@ -36,7 +37,8 @@ class GameRunner:
         worker_start_num=0,
         max_generation=200,
         data_folder='data',
-        max_framerate=60
+        max_framerate=60,
+        max_runtime=0
     ):
         self.num_threads = num_threads
         self.show_game = show_game
@@ -48,11 +50,13 @@ class GameRunner:
         self.max_generation = max_generation
         self.data_folder = data_folder
         self.max_framerate = max_framerate
+        self.max_runtime = max_runtime
 
         self.fitness_scores_for_generation = []
         self.fitness_dict = {}
         self.generation = 0
         self.config = None
+        self.start_time_seconds = time.time_ns() // 1_000_000_000
 
     def run_all_threads(self):
         self.run(0)
@@ -289,6 +293,11 @@ class GameRunner:
 
             for genome_id, genome in genomes:
                 genome.fitness = genome_result_dict[genome_id][1]
+
+            current_time_seconds = time.time_ns() // 1_000_000_000
+            if current_time_seconds - self.start_time_seconds >= self.max_runtime and self.max_runtime != 0:
+                print('Maximum run time exceeded. Exiting now.')
+                raise SystemExit
 
         config = neat.Config(
             neat.DefaultGenome,
