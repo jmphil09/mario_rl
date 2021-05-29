@@ -258,7 +258,7 @@ class ConfigGenerator:
 
     def randomize(self):
         self.fitness_criterion = random.choice(['min', 'max', 'mean'])
-        self.pop_size = int(random.uniform(2, 200))
+        self.pop_size = int(random.uniform(2, 512))
         self.reset_on_extinction = random.choice(['True', 'False'])
         self.activation_options = random.choice(['abs', 'clamped', 'cube', 'exp', 'gauss', 'hat', 'identity', 'inv', 'log', 'relu', 'sigmoid', 'sin', 'softplus', 'square', 'tanh'])
         self.aggregation_default = 'random'
