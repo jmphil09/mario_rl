@@ -5,10 +5,9 @@ from FitnessPlot_v4 import FitnessPlot
 
 
 ITERATIONS = 5 #10
-RUN_TIME = 180 #3600
+RUN_TIME = 300 #3600
 MAX_GENERATIONS = 3000
 
-'''
 for n in range(ITERATIONS):
     print('Working on {} out of {}'.format(n + 1, ITERATIONS))
     config = ConfigGenerator(filename='config_generated_{}'.format(n + 1))
@@ -34,7 +33,6 @@ for n in range(ITERATIONS):
         print('Caught: {}'.format(ex))
     except Exception as e:
         print('Caught an unexpected exception: {}'.format(e))
-'''
 
 #TODO: add a loop to show these for each config
 # ======================================================================
@@ -49,14 +47,9 @@ for n in range(ITERATIONS):
 #runner.play(completed_model_path=pth)
 #runner.play()
 
-# ======================================================================
 
-#TODO: Grab the fitness scores from the checkpoint files
-#TODO: Plot the fitness scores from the checkpoint files
-plot = FitnessPlot(folder_prefix='comparison_test/config_generated_1')
-#plot.plot_max_values()
-plot.plot_average_values()
-#print(dt)
-#ls = plot.create_fitness_list()
-#print(max(ls))
-#print(sum(ls) / len(ls))
+# ======================================================================
+# Plot the fitness scores for each config file
+plot = FitnessPlot(folder_prefix='comparison_test')
+plot.plot_fitness_scores()
+# ======================================================================
