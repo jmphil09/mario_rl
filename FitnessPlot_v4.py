@@ -10,9 +10,11 @@ from pathlib import Path
 
 
 class FitnessPlot:
-    def __init__(self, num_threads=1, folder_prefix='data'):
+    def __init__(self, num_threads=1, folder_prefix='data', plot_max_score=False, max_score=3186):
         self.num_threads = num_threads
         self.folder_prefix = folder_prefix
+        self.plot_max_score = plot_max_score
+        self.max_score = max_score
 
     def _create_fitness_list_for_checkpoint(self, checkpoint_filename):
         fitness_list = []
@@ -84,9 +86,11 @@ class FitnessPlot:
         Runtime both: 91s
         '''
         folders = glob.glob(str(Path('{}/*'.format(self.folder_prefix))))
+        max_gen = 1
         for subfolder in folders:
             plot_list = []
             fitness_dict = self.create_fitness_dict_par(subfolder)
+            max_gen = max(max_gen, len(fitness_dict))
             plt.figure(1)
             plot_list = sorted([(key, max([0 if x is None else x for x in value])) for key, value in fitness_dict.items()])
             plot_list = [x2 for (x1, x2) in plot_list]
@@ -98,10 +102,16 @@ class FitnessPlot:
             plot_list = [x2 for (x1, x2) in plot_list]
             label = subfolder.split('/')[-1]
             plt.plot(plot_list, label='{}'.format(label))
+
+        end_plot_list =[self.max_score] * max_gen
         plt.figure(1)
+        if self.plot_max_score:
+            plt.plot(end_plot_list, label='{}'.format('Goal: 1-1'))
         plt.ylabel('Max Fitness')
         plt.xlabel('Generation')
         plt.figure(2)
+        if self.plot_max_score:
+            plt.plot(end_plot_list, label='{}'.format('Goal'))
         plt.ylabel('Average Fitness')
         plt.xlabel('Generation')
         plt.legend()
