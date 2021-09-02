@@ -7,7 +7,6 @@ Create a new GameRunner class to run multiple levels and sync the results in one
 
 # Other Tasks
 - Replace neat-python library (possibly build a custom library for fun)
-- Build a custom checkpoint system (or find out how to work around neat-python index bug)
 - Add info on how the "good" config files were generated - the config with timestamp 1566017738 is one of the "best"
 - Plot random hyperparam results as a function of population size. See if there are any small population sizes in the top 20 or so. Add this to README.
 - Move generated data to external storage with a README on what each data folder is, and whether or not an experiment has been run on it. (The data not included in this repo is many GB, but some should be kept for further research.)

@@ -7,11 +7,11 @@ PLOT_RESULTS = True
 PLAY_GAME = True
 
 
-DATA_FOLDER = 'candidate1'
+DATA_FOLDER = 'candidate3'
 CONFIG_PREFIX = 'config_{}'.format(DATA_FOLDER)
 RUN_TIME = 7200#3600
 MAX_GENERATIONS = 10_000
-NUM_THREADS = 48
+NUM_THREADS = 24
 
 
 runner = GameRunner(

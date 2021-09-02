@@ -116,7 +116,10 @@ class GameRunner:
             fitness_current += reward
 
 
-    def show_top_n(self, n):
+    def show_top_n(self, n, show_game=True, show_nn_view=False):
+        self.show_game = show_game
+        self.show_nn_view = show_nn_view
+
         worker_num = 0
 
         def show_genomes(genomes, config):
@@ -148,7 +151,12 @@ class GameRunner:
                 frame = 0
                 frame_counter = 0
 
-                show_game = True
+                show_game = self.show_game #True
+                show_nn_view = self.show_nn_view
+
+                if show_nn_view:
+                    cv2.namedWindow("NN View", cv2.WINDOW_NORMAL)
+
                 done = False
                 env.render()
                 print('Waiting 10 seconds to continue')
@@ -166,9 +174,17 @@ class GameRunner:
                         env.render()
                     frame += 1
 
+                    if show_nn_view:
+                        scaledimg = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
+                        scaledimg = cv2.resize(scaledimg, (input_x, input_y))
+
                     obs = cv2.resize(obs, (input_x, input_y))
                     obs = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
                     obs = np.reshape(obs, (input_x, input_y))
+
+                    if self.show_nn_view:
+                        cv2.imshow('NN View', scaledimg)
+                        cv2.waitKey(1)
 
                     #Reshape input to a 1-d list.
                     imgarray = [num for row in obs for num in row]
@@ -192,7 +208,7 @@ class GameRunner:
                     else:
                         frame_counter += 1
 
-                    if done or frame_counter == 250:
+                    if done or frame_counter == 2500:
                         done = True
                     end_ts = time.time_ns() // 1_000_000
 
@@ -276,7 +292,9 @@ class GameRunner:
                 else:
                     frame_counter += 1
 
-                if done or frame_counter == 250:
+                max_frames = 25000 if (fitness_current >= 3074 and fitness_current <= 3186) else 250
+
+                if done or frame_counter == max_frames:
                     done = True
 
                 genome.fitness = fitness_current

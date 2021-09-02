@@ -2,14 +2,19 @@ from GameRunner_v4 import GameRunner
 from FitnessPlot_v4 import FitnessPlot
 
 
-RUN_TRAINING = False
+RUN_TRAINING = True
+#RUN_TRAINING = False
+
 PLOT_RESULTS = True
+PLOT_RESULTS = False
+
 PLAY_GAME = True
+PLAY_GAME = False
 
 
-DATA_FOLDER = 'candidate1'
+DATA_FOLDER = 'candidate7'
 CONFIG_PREFIX = 'config_{}'.format(DATA_FOLDER)
-RUN_TIME = 7200#3600
+RUN_TIME = 28_800#14_400#7200#3600
 MAX_GENERATIONS = 10_000
 NUM_THREADS = 48
 
@@ -17,8 +22,9 @@ NUM_THREADS = 48
 runner = GameRunner(
     num_threads=NUM_THREADS,
     show_game=False,
-    level_end_score=3186,
-    convolution_weight=8,
+    show_nn_view=False,
+    level_end_score=3074,
+    convolution_weight=1,
     config_file_name=CONFIG_PREFIX,
     worker_start_num=0,
     max_generation=MAX_GENERATIONS,
@@ -27,7 +33,7 @@ runner = GameRunner(
     max_runtime=RUN_TIME
 )
 
-plot = FitnessPlot(num_threads=NUM_THREADS, folder_prefix=DATA_FOLDER, plot_max_score=True, max_score=3186)
+plot = FitnessPlot(num_threads=NUM_THREADS, folder_prefix=DATA_FOLDER, plot_max_score=True, max_score=3074)#  max_score=3186
 
 #Run training
 if RUN_TRAINING:
@@ -46,7 +52,7 @@ if PLOT_RESULTS:
 
 # Test the model DURING training
 if PLAY_GAME:
-    runner.show_top_n(3)
+    runner.show_top_n(1, show_game=True, show_nn_view=True)
 
 # ======================================================================
 # Test the model AFTER training
