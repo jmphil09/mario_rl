@@ -14,9 +14,9 @@ PLAY_GAME = False
 
 DATA_FOLDER = 'v5_test'
 CONFIG_PREFIX = 'config_{}'.format(DATA_FOLDER)
-RUN_TIME = 14400#7200#3600
+RUN_TIME = 14400*4#7200#3600
 MAX_GENERATIONS = 10_000
-NUM_THREADS = 32#48
+NUM_THREADS = 24
 
 
 runner = GameRunner(
@@ -35,6 +35,7 @@ runner = GameRunner(
 
 plot = FitnessPlot(num_threads=NUM_THREADS, folder_prefix=DATA_FOLDER, plot_max_score=True, max_score=3074)#  max_score=3186
 
+
 #Run training
 if RUN_TRAINING:
     try:
@@ -52,11 +53,16 @@ if PLOT_RESULTS:
 
 # Test the model DURING training
 if PLAY_GAME:
-    runner.show_top_n(1, show_game=True, show_nn_view=True)
+    states = ['Level' + str(n) + '-1.state' for n in range(1,9)]
+    for state in states:
+        try:
+            runner.show_top_n(1, show_game=True, show_nn_view=False, state=state)
+        except Exception as ex:
+            print(ex)
 
 # ======================================================================
 # Test the model AFTER training
-#pth = 'complete_models/winner31.pkl'
+#pth = 'complete_models/winner.pkl'
 #runner.play(completed_model_path=pth)
 #runner.play()
 # ======================================================================

@@ -116,7 +116,7 @@ class GameRunner:
             fitness_current += reward
 
 
-    def show_top_n(self, n, show_game=True, show_nn_view=False):
+    def show_top_n(self, n, show_game=True, show_nn_view=False, state='Level1-1.state'):
         self.show_game = show_game
         self.show_nn_view = show_nn_view
 
@@ -135,83 +135,95 @@ class GameRunner:
             print(top_genome_id_list)
             print(top_genomes)
 
-            env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
-            for genome_id, genome in top_genomes:
-                obs = env.reset()
-                env.action_space.sample()
+            env = retro.make(game='SuperMarioBros-Nes', state=state)
 
-                input_x, input_y, input_colors = env.observation_space.shape
-                input_x = int(input_x/self.convolution_weight)
-                input_y = int(input_y/self.convolution_weight)
+            try:
 
-                net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
+                for genome_id, genome in top_genomes:
+                    obs = env.reset()
+                    env.action_space.sample()
 
-                current_max_fitness = 0
-                fitness_current = 0
-                frame = 0
-                frame_counter = 0
+                    input_x, input_y, input_colors = env.observation_space.shape
+                    input_x = int(input_x/self.convolution_weight)
+                    input_y = int(input_y/self.convolution_weight)
 
-                show_game = self.show_game #True
-                show_nn_view = self.show_nn_view
+                    net = neat.nn.recurrent.RecurrentNetwork.create(genome, config)
 
-                if show_nn_view:
-                    cv2.namedWindow("NN View", cv2.WINDOW_NORMAL)
+                    current_max_fitness = 0
+                    fitness_current = 0
+                    frame = 0
+                    frame_counter = 0
 
-                done = False
-                env.render()
-                print('Waiting 10 seconds to continue')
-                time.sleep(10)
-
-                end_ts = time.time_ns() // 1_000_000
-                while not done:
-                    start_ts = time.time_ns() // 1_000_000
-
-                    if show_game:
-                        while end_ts - start_ts <= 1000 / self.max_framerate:
-                            #print('end_ts: {}, start_ts: {}, diff: {}'.format(end_ts, start_ts, end_ts - start_ts))
-                            time.sleep(.001)
-                            end_ts = time.time_ns() // 1_000_000
-                        env.render()
-                    frame += 1
+                    show_game = self.show_game #True
+                    show_nn_view = self.show_nn_view
 
                     if show_nn_view:
-                        scaledimg = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
-                        scaledimg = cv2.resize(scaledimg, (input_x, input_y))
+                        cv2.namedWindow("NN View", cv2.WINDOW_NORMAL)
 
-                    obs = cv2.resize(obs, (input_x, input_y))
-                    obs = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
-                    obs = np.reshape(obs, (input_x, input_y))
+                    done = False
+                    env.render()
+                    print('Waiting 10 seconds to continue')
+                    time.sleep(10)
 
-                    if self.show_nn_view:
-                        cv2.imshow('NN View', scaledimg)
-                        cv2.waitKey(1)
-
-                    #Reshape input to a 1-d list.
-                    imgarray = [num for row in obs for num in row]
-
-                    nn_output = net.activate(imgarray)
-
-                    obs, reward, done, info = env.step(nn_output)
-
-                    #This reward function gives 1 point every time xscrollLo increases
-                    fitness_current += reward
-
-                    #Replace the RHS with the xscrollLo value at the end of the level
-                    #or end of the game
-                    if fitness_current > self.level_end_score:
-                        fitness_current += 100000
-                        done = True
-
-                    if fitness_current > current_max_fitness:
-                        current_max_fitness = fitness_current
-                        frame_counter = 0
-                    else:
-                        frame_counter += 1
-
-                    if done or frame_counter == 2500:
-                        done = True
                     end_ts = time.time_ns() // 1_000_000
+                    while not done:
+                        start_ts = time.time_ns() // 1_000_000
 
+                        if show_game:
+                            while end_ts - start_ts <= 1000 / self.max_framerate:
+                                #print('end_ts: {}, start_ts: {}, diff: {}'.format(end_ts, start_ts, end_ts - start_ts))
+                                time.sleep(.001)
+                                end_ts = time.time_ns() // 1_000_000
+                            env.render()
+                        frame += 1
+
+                        if show_nn_view:
+                            scaledimg = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
+                            scaledimg = cv2.resize(scaledimg, (input_x, input_y))
+
+                        obs = cv2.resize(obs, (input_x, input_y))
+                        obs = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
+                        obs = np.reshape(obs, (input_x, input_y))
+
+                        if self.show_nn_view:
+                            cv2.imshow('NN View', scaledimg)
+                            cv2.waitKey(1)
+
+                        #Reshape input to a 1-d list.
+                        imgarray = [num for row in obs for num in row]
+
+                        nn_output = net.activate(imgarray)
+
+                        obs, reward, done, info = env.step(nn_output)
+
+                        #This reward function gives 1 point every time xscrollLo increases
+                        fitness_current += reward
+
+                        #Replace the RHS with the xscrollLo value at the end of the level
+                        #or end of the game
+
+                        '''
+                        if fitness_current > self.level_end_score:
+                            fitness_current += 100000
+                            done = True
+                        '''
+
+                        if fitness_current > current_max_fitness:
+                            current_max_fitness = fitness_current
+                            frame_counter = 0
+                        else:
+                            frame_counter += 1
+
+                        if done or frame_counter == 2500:
+                            done = True
+                        end_ts = time.time_ns() // 1_000_000
+
+            except Exception as ex:
+                print('===================================================')
+                print(ex)
+                env.close()
+
+        #try:
         #Load population checkpoint if one exists
         latest_checkpoint = self._get_latest_checkpoint(worker_num)
         if latest_checkpoint:
@@ -236,6 +248,8 @@ class GameRunner:
             print('No population checkpoint found, creating new population.')
 
         p.run(show_genomes)
+        #except Exception as ex:
+        #    print(ex)
 
 
     def eval_single_genome(self, worker_num, genome_list, states=['Level1-1.state', 'Level2-1.state', 'Level3-1.state', 'Level4-1.state', 'Level5-1.state', 'Level6-1.state', 'Level7-1.state', 'Level8-1.state']):
@@ -284,9 +298,12 @@ class GameRunner:
 
                     #Replace the RHS with the xscrollLo value at the end of the level
                     #or end of the game
+
+                    '''
                     if fitness_current > self.level_end_score:
                         fitness_current += 100000
                         done = True
+                    '''
 
                     if fitness_current > current_max_fitness:
                         current_max_fitness = fitness_current
