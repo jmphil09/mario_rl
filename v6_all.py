@@ -6,19 +6,19 @@ from FitnessPlot_v4 import FitnessPlot
 for n in range(1, 9):
 
     RUN_TRAINING = True
-    RUN_TRAINING = False
+    #RUN_TRAINING = False
 
     PLOT_RESULTS = True
-    #PLOT_RESULTS = False
+    PLOT_RESULTS = False
 
     PLAY_GAME = True
-    #PLAY_GAME = False
+    PLAY_GAME = False
 
 
     DATA_FOLDER = 'v6_level' + str(n) + '-1'
     CONFIG_PREFIX = 'config_{}'.format(DATA_FOLDER)
-    RUN_TIME = 14400*4#7200#3600
-    MAX_GENERATIONS = 2#10_000
+    RUN_TIME = 1*450  # Change first number for number of hours
+    MAX_GENERATIONS = 10_000
     NUM_THREADS = 48
 
     STATES = ['Level' + str(n) + '-1.state']
