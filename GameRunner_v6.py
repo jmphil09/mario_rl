@@ -11,6 +11,20 @@ import numpy as np
 from multiprocessing import Pool
 from pathlib import Path
 
+from gym.wrappers import Monitor
+from threading import Thread
+import simpleaudio as sa
+
+class sound():
+    # "Number of channels must be 1 or 2."
+    # "Bytes-per-sample must be 1, 2, 3, or 4."
+    # sample rate: 8000, 11025, 16000, 22050, 24000, 32000, 44100, 48000, 88200, 96000, 192000
+    def play(self, array, fs):
+        sa.play_buffer(array, 1, 2, 44100)
+        #sa.play_buffer(array, 1, 2, 32000)
+
+mysound = sound()
+
 
 class GameRunner:
     """General GameRunner class to have a NN generate a model to beat a game.
@@ -67,57 +81,6 @@ class GameRunner:
         self.run(worker_num)
 
 
-    def play(self, completed_model_path=''):
-        if not completed_model_path:
-            completed_model_path = '{}/{}/complete_models/winner.pkl'.format(self.data_folder, self.config_file_name)
-        completed_model = pickle.load(open(completed_model_path, 'rb'))
-        env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
-        obs = env.reset()
-        env.action_space.sample()
-
-        input_x, input_y, input_colors = env.observation_space.shape
-        input_x = int(input_x/self.convolution_weight)
-        input_y = int(input_y/self.convolution_weight)
-
-        config = neat.Config(
-            neat.DefaultGenome,
-            neat.DefaultReproduction,
-            neat.DefaultSpeciesSet,
-            neat.DefaultStagnation,
-            self.config_file_name
-        )
-
-        net = neat.nn.recurrent.RecurrentNetwork.create(completed_model, config)
-
-        show_game = True
-        done = False
-
-        current_max_fitness = 0
-        fitness_current = 0
-        frame = 0
-        frame_counter = 0
-
-        while not done:
-
-            if show_game:
-                env.render()
-            frame += 1
-
-            obs = cv2.resize(obs, (input_x, input_y))
-            obs = cv2.cvtColor(obs, cv2.COLOR_BGR2GRAY)
-            obs = np.reshape(obs, (input_x, input_y))
-
-            #Reshape input to a 1-d list.
-            imgarray = [num for row in obs for num in row]
-
-            nn_output = net.activate(imgarray)
-
-            obs, reward, done, info = env.step(nn_output)
-
-            #This reward function gives 1 point every time xscrollLo increases
-            fitness_current += reward
-
-
     def show_top_n(self, n, show_game=True, show_nn_view=False, state='Level1-1.state', full_timer=True):
         self.show_game = show_game
         self.show_nn_view = show_nn_view
@@ -134,13 +97,9 @@ class GameRunner:
             top_ids = [x1 for (x1, x2) in top_genome_id_list]
             top_genomes = [(genome_id, genome) for (genome_id, genome) in genomes if genome_id in top_ids]
 
-            print(top_genome_id_list)
-            print(top_genomes)
-
-            env = retro.make(game='SuperMarioBros-Nes', state=state)
+            env = Monitor(retro.make(game='SuperMarioBros-Nes', state=state), './video/{}'.format(state), force=True)
 
             try:
-
                 for genome_id, genome in top_genomes:
                     obs = env.reset()
                     env.action_space.sample()
@@ -164,8 +123,6 @@ class GameRunner:
 
                     done = False
                     env.render()
-                    print('Waiting 10 seconds to continue')
-                    time.sleep(10)
 
                     end_ts = time.time_ns() // 1_000_000
                     while not done:
@@ -173,10 +130,13 @@ class GameRunner:
 
                         if show_game:
                             while end_ts - start_ts <= 1000 / self.max_framerate:
-                                #print('end_ts: {}, start_ts: {}, diff: {}'.format(end_ts, start_ts, end_ts - start_ts))
                                 time.sleep(.001)
                                 end_ts = time.time_ns() // 1_000_000
                             env.render()
+                            a = env.em.get_audio()
+                            b = env.em.get_audio_rate()
+                            thread = Thread(target=mysound.play, args=(a, b,))
+                            thread.start()
                         frame += 1
 
                         if show_nn_view:
@@ -191,24 +151,10 @@ class GameRunner:
                             cv2.imshow('NN View', scaledimg)
                             cv2.waitKey(1)
 
-                        #Reshape input to a 1-d list.
                         imgarray = [num for row in obs for num in row]
-
                         nn_output = net.activate(imgarray)
-
                         obs, reward, done, info = env.step(nn_output)
-
-                        #This reward function gives 1 point every time xscrollLo increases
                         fitness_current += reward
-
-                        #Replace the RHS with the xscrollLo value at the end of the level
-                        #or end of the game
-
-                        '''
-                        if fitness_current > self.level_end_score:
-                            fitness_current += 100000
-                            done = True
-                        '''
 
                         if fitness_current > current_max_fitness:
                             current_max_fitness = fitness_current
@@ -221,7 +167,6 @@ class GameRunner:
                         else:
                             counter_limit = 250
 
-                        #if done or frame_counter == 2500:
                         if done or frame_counter == counter_limit:
                             done = True
                         end_ts = time.time_ns() // 1_000_000
@@ -230,6 +175,8 @@ class GameRunner:
                 print('===================================================')
                 print(ex)
                 env.close()
+
+            env.viewer.close()
 
         #try:
         #Load population checkpoint if one exists
@@ -252,8 +199,9 @@ class GameRunner:
             p = neat.Checkpointer.restore_checkpoint(latest_checkpoint)
             print('Loaded population checkpoint: {}'.format(latest_checkpoint))
         else:
-            p = neat.Population(config)
-            print('No population checkpoint found, creating new population.')
+            #p = neat.Population(config)
+            #print('No population checkpoint found, creating new population.')
+            print('ERROR')
 
         p.run(show_genomes)
         #except Exception as ex:
