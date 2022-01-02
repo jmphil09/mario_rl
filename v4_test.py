@@ -19,19 +19,19 @@ runner = GameRunner(
     data_folder='data_v4_test'
 )
 
-runner.run_all_threads()
+#runner.run_all_threads()
 
 # ======================================================================
 # Test the model DURING training
-#runner.show_top_n(3)
+#runner.show_top_n(1)
 # ======================================================================
 
 # ======================================================================
 # Test the model AFTER training
 
-#pth = 'complete_models/winner31.pkl'
-#runner.play(completed_model_path=pth)
-#runner.play()
+pth = 'complete_models/winner31.pkl'
+runner.play(completed_model_path=pth)
+runner.play()
 
 # ======================================================================
 

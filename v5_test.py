@@ -1,15 +1,15 @@
-from GameRunner_v5 import GameRunner
+from GameRunner_v6 import GameRunner
 from FitnessPlot_v4 import FitnessPlot
 
 
 RUN_TRAINING = True
-#RUN_TRAINING = False
+RUN_TRAINING = False
 
 PLOT_RESULTS = True
 PLOT_RESULTS = False
 
 PLAY_GAME = True
-PLAY_GAME = False
+#PLAY_GAME = False
 
 
 DATA_FOLDER = 'v5_test'
@@ -53,10 +53,10 @@ if PLOT_RESULTS:
 
 # Test the model DURING training
 if PLAY_GAME:
-    states = ['Level' + str(n) + '-1.state' for n in range(1,9)]
+    states = ['Level' + str(n) + '-1.state' for n in range(6,7)]
     for state in states:
         try:
-            runner.show_top_n(1, show_game=True, show_nn_view=False, state=state)
+            runner.show_top_n(1, show_game=True, show_nn_view=False, state=state, full_timer=False)
         except Exception as ex:
             print(ex)
 
