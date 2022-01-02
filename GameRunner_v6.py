@@ -123,6 +123,8 @@ class GameRunner:
 
                     done = False
                     env.render()
+                    print('Waiting 10 seconds to continue')
+                    time.sleep(10)
 
                     end_ts = time.time_ns() // 1_000_000
                     while not done:
