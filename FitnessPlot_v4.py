@@ -17,19 +17,26 @@ class FitnessPlot:
         self.max_score = max_score
 
     def _create_fitness_list_for_checkpoint(self, checkpoint_filename):
-        fitness_list = []
-        with gzip.open('{}'.format(checkpoint_filename)) as f:
-            generation, config, population, species_set, rndstate = pickle.load(f)
-            for species_id in population:
-                species = species_set.get_species(species_id)
-                fitness_list.append(species.fitness)
-        return (generation, fitness_list)
+        try:
+            fitness_list = []
+            with gzip.open('{}'.format(checkpoint_filename)) as f:
+                generation, config, population, species_set, rndstate = pickle.load(f)
+                for species_id in population:
+                    species = species_set.get_species(species_id)
+                    fitness_list.append(species.fitness)
+            return (generation, fitness_list)
+        except Exception as ex:
+            print(ex)
+            return (None, None)
 
     def _create_fitness_list_for_checkpoint_par(self, core_num, file_list):
         result = {}
         for file in file_list:
             key, value = self._create_fitness_list_for_checkpoint(file)
-            result[key] = value
+            if key:
+                result[key] = value
+            else:
+                pass
         return result
 
     def create_fitness_dict_par(self, subfolder):
