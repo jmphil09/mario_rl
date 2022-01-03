@@ -8,6 +8,9 @@ import numpy as np
 from multiprocessing import Pool
 from pathlib import Path
 
+import re
+import os
+
 
 class FitnessPlot:
     def __init__(self, num_threads=1, folder_prefix='data', plot_max_score=False, max_score=3186):
@@ -17,18 +20,24 @@ class FitnessPlot:
         self.max_score = max_score
 
     def _create_fitness_list_for_checkpoint(self, checkpoint_filename):
-        try:
-            fitness_list = []
-            with gzip.open('{}'.format(checkpoint_filename)) as f:
-                generation, config, population, species_set, rndstate = pickle.load(f)
-                for species_id in population:
-                    species = species_set.get_species(species_id)
-                    fitness_list.append(species.fitness)
-            return (generation, fitness_list)
-        except Exception as ex:
-            print(ex)
-            print('Error occurred on: {}'.format(checkpoint_filename))
+        ignore_files = ['complete_models', 'fitness_dict.pkl']
+        bare_file = checkpoint_filename.split('/')[-1]
+        if bare_file in ignore_files:
+            print('Preventing error on: {}'.format(checkpoint_filename))
             return (None, None)
+        else:
+            try:
+                fitness_list = []
+                with gzip.open('{}'.format(checkpoint_filename)) as f:
+                    generation, config, population, species_set, rndstate = pickle.load(f)
+                    for species_id in population:
+                        species = species_set.get_species(species_id)
+                        fitness_list.append(species.fitness)
+                return (generation, fitness_list)
+            except Exception as ex:
+                print(ex)
+                print('Error occurred on: {}'.format(checkpoint_filename))
+                return (None, None)
 
     def _create_fitness_list_for_checkpoint_par(self, core_num, file_list):
         result = {}
@@ -67,7 +76,17 @@ class FitnessPlot:
         # update existing pickled fitness list by adding new checkpoint data
         new_fitness_dict = self.create_fitness_dict_par(subfolder)
         new_fitness_dict.update(existing_fitness_dict)
-        self._save_fitness_dict_as_pickle(new_fitness_dict, subfolder)
+        # Save successfully before deleting files
+        try:
+            delete_files = True
+            self._save_fitness_dict_as_pickle(new_fitness_dict, subfolder)
+        except Exception as ex:
+            delete_files = False
+            print(ex)
+            print('Error saving fitness dict, will not delete files.')
+        if delete_files:
+            #print('Will delete files in: {}'.format(subfolder))
+            self._delete_checkpoint_files(subfolder)
         # delete added checkpoint files
         #TODO: delete all checkpoints except the most recent one
         # return updated pickled fitness list
@@ -76,10 +95,6 @@ class FitnessPlot:
 
     def _save_fitness_dict_as_pickle(self, fitness_dict, subfolder):
         pickle_name = Path('{}/fitness_dict.pkl'.format(subfolder))
-        #pickle_dir = pickle_name.parent
-        #pickle_dir.mkdir(parents=True, exist_ok=True)
-        #with open(pickle_name, 'wb') as output:
-        #    pickle.dump(fitness_dict, output, 1)
         with gzip.open(pickle_name, 'w', compresslevel=5) as f:
             data = fitness_dict
             pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
@@ -93,6 +108,28 @@ class FitnessPlot:
         except Exception as ex:
             print(ex)
         return result
+
+    def _delete_checkpoint_files(self, subfolder):
+        folders = glob.glob(str(Path('{}/*'.format(subfolder))))
+        #files = [file.split('/')[-1] for file in folders]
+        files = [file for file in folders if 'neat-checkpoint-' in file]
+        def atoi(text):
+            return int(text) if text.isdigit() else text
+        def natural_keys(text):
+            return [ atoi(c) for c in re.split('(\d+)',text) ]
+        files.sort(key=natural_keys)
+        print(files)
+        #print(len(folders))
+        #print(len(files))
+        files_to_keep = files[-1]
+        files_to_delete = [f for f in files if f not in [files_to_keep]]
+        print('Files to delete')
+        print(files_to_delete)
+        print('Files to keep')
+        print(files_to_keep)
+        for file in files_to_delete:
+            print('Deleting: {}'.format(file))
+            os.remove(file)
 
     def _plot_max_and_avg(self):
         '''

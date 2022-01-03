@@ -1,12 +1,12 @@
 from GameRunner_v6 import GameRunner
-from FitnessPlot_v4 import FitnessPlot
+from FitnessPlot_v6 import FitnessPlot
 
 
 RUN_TRAINING = True
-#RUN_TRAINING = False
+RUN_TRAINING = False
 
 PLOT_RESULTS = True
-PLOT_RESULTS = False
+#PLOT_RESULTS = False
 
 PLAY_GAME = True
 PLAY_GAME = False
