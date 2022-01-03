@@ -69,9 +69,7 @@ class FitnessPlot:
 
     def create_fitness_dict_with_cache(self, subfolder):
         # check for existing pickled fitness list
-        existing_fitness_dict = {}# {'test_key': 'test_value', 7041: [1,2,3], 7042: [1,2,3], 7043: [1,2,3], 7049: [1,2,3]}
         existing_fitness_dict = self._load_fitness_dict_from_pickle(subfolder)
-        #print(existing_fitness_dict)
         # check for new checkpoint files (see if there are 2 or more?)
         # update existing pickled fitness list by adding new checkpoint data
         new_fitness_dict = self.create_fitness_dict_par(subfolder)
@@ -85,10 +83,8 @@ class FitnessPlot:
             print(ex)
             print('Error saving fitness dict, will not delete files.')
         if delete_files:
-            #print('Will delete files in: {}'.format(subfolder))
+            # delete added checkpoint files
             self._delete_checkpoint_files(subfolder)
-        # delete added checkpoint files
-        #TODO: delete all checkpoints except the most recent one
         # return updated pickled fitness list
         return new_fitness_dict
 
@@ -111,16 +107,12 @@ class FitnessPlot:
 
     def _delete_checkpoint_files(self, subfolder):
         folders = glob.glob(str(Path('{}/*'.format(subfolder))))
-        #files = [file.split('/')[-1] for file in folders]
         files = [file for file in folders if 'neat-checkpoint-' in file]
         def atoi(text):
             return int(text) if text.isdigit() else text
         def natural_keys(text):
             return [ atoi(c) for c in re.split('(\d+)',text) ]
         files.sort(key=natural_keys)
-        print(files)
-        #print(len(folders))
-        #print(len(files))
         files_to_keep = files[-1]
         files_to_delete = [f for f in files if f not in [files_to_keep]]
         print('Files to delete')
@@ -140,9 +132,6 @@ class FitnessPlot:
         for subfolder in folders:
             plot_list = []
             fitness_dict = self.create_fitness_dict_with_cache(subfolder)
-            #print(sorted(fitness_dict.keys()))
-            #print(len(fitness_dict.keys()))
-            #print(fitness_dict[7045])
             max_gen = max(max_gen, len(fitness_dict))
             plt.figure(1)
             plot_list = sorted([(key, max([0 if x is None else x for x in value])) for key, value in fitness_dict.items()])
@@ -168,6 +157,9 @@ class FitnessPlot:
         plt.ylabel('Average Fitness')
         plt.xlabel('Generation')
         plt.legend()
+
+    def clean_up_data(self):
+        self._plot_max_and_avg()
 
     def plot_fitness_scores(self):
         self._plot_max_and_avg()
