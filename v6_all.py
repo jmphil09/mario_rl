@@ -70,6 +70,7 @@ while run_counter < RUN_CYCLES:
                     print(ex)
 
         del runner
+        del plot
 
         # ======================================================================
         # Test the model AFTER training
