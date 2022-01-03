@@ -1,5 +1,5 @@
 from GameRunner_v6 import GameRunner
-from FitnessPlot_v4 import FitnessPlot
+from FitnessPlot_v6 import FitnessPlot
 
 
 RUN_CYCLES = 100000
