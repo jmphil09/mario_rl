@@ -20,8 +20,9 @@ class sound():
     # "Bytes-per-sample must be 1, 2, 3, or 4."
     # sample rate: 8000, 11025, 16000, 22050, 24000, 32000, 44100, 48000, 88200, 96000, 192000
     def play(self, array, fs):
-        sa.play_buffer(array, 1, 2, 44100)
+        #sa.play_buffer(array, 1, 2, 44100)
         #sa.play_buffer(array, 1, 2, 32000)
+        sa.play_buffer(array, 1, 2, 48000)
 
 mysound = sound()
 

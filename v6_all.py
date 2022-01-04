@@ -22,7 +22,7 @@ while run_counter < RUN_CYCLES:
         CONFIG_PREFIX = 'config_{}'.format(DATA_FOLDER)
         RUN_TIME = 3*450  # Change first number for number of hours
         MAX_GENERATIONS = 1#10_000  # Change to 1 in order to use RUN_CYCLES properly
-        NUM_THREADS = 48
+        NUM_THREADS = 16
 
         STATES = ['Level' + str(n) + '-1.state']
 
@@ -36,7 +36,7 @@ while run_counter < RUN_CYCLES:
             worker_start_num=0,
             max_generation=MAX_GENERATIONS,
             data_folder=DATA_FOLDER,
-            max_framerate=60,
+            max_framerate=88,
             max_runtime=RUN_TIME,
             states=STATES
         )
