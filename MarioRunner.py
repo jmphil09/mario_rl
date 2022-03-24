@@ -228,8 +228,9 @@ class GameRunner:
             #env = retro.make(game='SuperMarioBros-Nes', state=state)
 
             env = gym_super_mario_bros.make(state)
+            env = JoypadSpace(env, COMPLEX_MOVEMENT)
 
-            env.action_space.sample()
+            #env.action_space.sample()
             for genome_id, genome in genome_list:
 
                 obs = env.reset()
@@ -266,10 +267,10 @@ class GameRunner:
                     #if nn_output != [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]:
                     #    #print(nn_output)
                     nn_output = self.one_hot_encode(nn_output)
-                    nn_output = 9
+                    #nn_output = 9
                     obs, reward, done, info = env.step(nn_output)
                     #print('YIPE!!!')
-                    print(env.action_space.sample())
+                    #print(env.action_space.sample())
                     #print(env.step(nn_output))
                     #This reward function gives 1 point every time xscrollLo increases
                     fitness_current += reward
@@ -312,7 +313,11 @@ class GameRunner:
             p = Pool(processes=self.num_threads)
             genome_results = p.starmap(self.eval_single_genome, [[i, (split_genomes[i])] for i in range(0, self.num_threads)])
             genome_result_list = [item for sublist in genome_results for item in sublist]
+            #print('list: ')
+            #print(genome_result_list)
             genome_result_dict = {item[0]: (item[1], item[2]) for item in genome_result_list}
+            #print('dict: ')
+            #print(genome_result_dict)
 
             for genome_id, genome in genomes:
                 genome.fitness = genome_result_dict[genome_id][1]
@@ -369,15 +374,17 @@ class GameRunner:
                 filename_prefix=checkpoint_filename
             )
         )
-
+        print('aaa')
         winner = p.run(eval_genomes, n=self.max_generation)
-
+        print('bbb')
+        '''
         #Save the winner
         pickle_name = Path('{}/{}/complete_models/winner.pkl'.format(self.data_folder, self.config_file_name))
         pickle_dir = pickle_name.parent
         pickle_dir.mkdir(parents=True, exist_ok=True)
         with open(pickle_name, 'wb') as output:
             pickle.dump(winner, output, 1)
+        '''
 
 
     #helper functions

@@ -1,4 +1,5 @@
 from MarioRunner import GameRunner
+#from GameRunner_v6 import GameRunner
 from FitnessPlot_v6 import FitnessPlot
 
 
@@ -12,13 +13,13 @@ PLAY_GAME = True
 PLAY_GAME = False
 
 
-DATA_FOLDER = 'v6_mario_level1-1'
+DATA_FOLDER = 'v6_mariolib_test'
 CONFIG_PREFIX = 'config_{}'.format(DATA_FOLDER)
 RUN_TIME = 14400*4#7200#3600
 MAX_GENERATIONS = 10_000
-NUM_THREADS = 16
+NUM_THREADS = 32
 
-STATES = ['SuperMarioBros-1-1-v0', 'SuperMarioBros-1-2-v0']
+STATES = ['SuperMarioBros-1-2-v0']#['SuperMarioBros-1-1-v0', 'SuperMarioBros-1-2-v0']
 
 runner = GameRunner(
     num_threads=NUM_THREADS,

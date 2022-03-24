@@ -1,5 +1,5 @@
-from GameRunner_v6 import GameRunner
-from FitnessPlot_v4 import FitnessPlot
+from GameRunner_v6_temp import GameRunner
+from FitnessPlot_v6 import FitnessPlot
 
 
 RUN_TRAINING = True
@@ -16,7 +16,7 @@ DATA_FOLDER = 'v6_level1-1'
 CONFIG_PREFIX = 'config_{}'.format(DATA_FOLDER)
 RUN_TIME = 14400*4#7200#3600
 MAX_GENERATIONS = 10_000
-NUM_THREADS = 6
+NUM_THREADS = 16
 
 STATES = ['Level1-1.state']
 

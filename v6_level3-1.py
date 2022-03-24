@@ -1,15 +1,15 @@
-from GameRunner_v6 import GameRunner
+from GameRunner_v6_temp import GameRunner
 from FitnessPlot_v6 import FitnessPlot
 
 
 RUN_TRAINING = True
-#RUN_TRAINING = False
+RUN_TRAINING = False
 
 PLOT_RESULTS = True
-PLOT_RESULTS = False
+#PLOT_RESULTS = False
 
 PLAY_GAME = True
-PLAY_GAME = False
+#PLAY_GAME = False
 
 
 DATA_FOLDER = 'v6_level3-1'
@@ -30,7 +30,7 @@ runner = GameRunner(
     worker_start_num=0,
     max_generation=MAX_GENERATIONS,
     data_folder=DATA_FOLDER,
-    max_framerate=60,
+    max_framerate=88,
     max_runtime=RUN_TIME,
     states=STATES
 )
@@ -59,7 +59,7 @@ if PLAY_GAME:
     states = STATES
     for state in states:
         try:
-            runner.show_top_n(1, show_game=True, show_nn_view=False, state=state)
+            runner.show_top_n(1, show_game=True, show_nn_view=False, state=state, full_timer=False)
         except Exception as ex:
             print(ex)
 

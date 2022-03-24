@@ -54,7 +54,8 @@ class GameRunner:
         data_folder='data',
         max_framerate=60,
         max_runtime=0,
-        states=['Level1-1.state', 'Level2-1.state', 'Level3-1.state', 'Level4-1.state', 'Level5-1.state', 'Level6-1.state', 'Level7-1.state', 'Level8-1.state']
+        states=['Level1-1.state', 'Level2-1.state', 'Level3-1.state', 'Level4-1.state', 'Level5-1.state', 'Level6-1.state', 'Level7-1.state', 'Level8-1.state'],
+        max_frame_wait=250
     ):
         self.num_threads = num_threads
         self.show_game = show_game
@@ -68,6 +69,7 @@ class GameRunner:
         self.max_framerate = max_framerate
         self.max_runtime = max_runtime
         self.level_states = states
+        self.max_frame_wait = max_frame_wait
 
         self.fitness_scores_for_generation = []
         self.fitness_dict = {}
@@ -168,7 +170,7 @@ class GameRunner:
                         if full_timer:
                             counter_limit = 2500
                         else:
-                            counter_limit = 250
+                            counter_limit = self.max_frame_wait
 
                         if done or frame_counter == counter_limit:
                             done = True
@@ -183,28 +185,33 @@ class GameRunner:
 
         #try:
         #Load population checkpoint if one exists
-        latest_checkpoint = self._get_latest_checkpoint(worker_num)
-        if latest_checkpoint:
-            pickle_file = latest_checkpoint
+        try:
+            latest_checkpoint = self._get_latest_checkpoint(worker_num)
+            if latest_checkpoint:
+                pickle_file = latest_checkpoint
 
-            #Update the generation because the implementation in neat-python has a bug
-            generation = int(latest_checkpoint.split('-')[-1]) + 1
-            with gzip.open(pickle_file) as f:
-                contents = pickle.load(f)
-                new_tuple = list(contents)
-                new_tuple[0] = generation
-                new_tuple = tuple(new_tuple)
+                #Update the generation because the implementation in neat-python has a bug
+                generation = int(latest_checkpoint.split('-')[-1]) + 1
+                with gzip.open(pickle_file) as f:
+                    contents = pickle.load(f)
+                    new_tuple = list(contents)
+                    new_tuple[0] = generation
+                    new_tuple = tuple(new_tuple)
 
-            with gzip.open(pickle_file, 'w', compresslevel=5) as f:
-                data = new_tuple
-                pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
+                with gzip.open(pickle_file, 'w', compresslevel=5) as f:
+                    data = new_tuple
+                    pickle.dump(data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-            p = neat.Checkpointer.restore_checkpoint(latest_checkpoint)
-            print('Loaded population checkpoint: {}'.format(latest_checkpoint))
-        else:
-            #p = neat.Population(config)
-            #print('No population checkpoint found, creating new population.')
-            print('ERROR')
+                p = neat.Checkpointer.restore_checkpoint(latest_checkpoint)
+                print('Loaded population checkpoint: {}'.format(latest_checkpoint))
+            else:
+                #p = neat.Population(config)
+                #print('No population checkpoint found, creating new population.')
+                print('ERROR')
+        except Exception as ex:
+            print('An error occurred while loading checkpoint')
+            print(ex)
+            raise
 
         p.run(show_genomes)
         #except Exception as ex:
@@ -271,7 +278,7 @@ class GameRunner:
                         frame_counter += 1
 
                     max_frames = 25000 if (fitness_current >= 3074 and fitness_current <= 3186) else 250
-                    max_frames = 250  # Revisit this later
+                    max_frames = self.max_frame_wait  # Revisit this later
 
                     if done or frame_counter == max_frames:
                         done = True

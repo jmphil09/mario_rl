@@ -1,0 +1,5 @@
+{
+    "stop": true,
+    "num_cores": 32,
+    "clean_and_play": false
+}
