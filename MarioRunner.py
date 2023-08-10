@@ -6,6 +6,9 @@ import pickle
 import retro
 import time
 
+#from chatgpt
+import traceback  # Import the traceback module at the beginning of your script
+
 import numpy as np
 
 from multiprocessing import Pool
@@ -84,8 +87,10 @@ class GameRunner:
         try:
             self.run(0)
         except Exception as ex:
-            print('abc')
-            print(ex)
+            print('An exception occurred in run_all_threads')
+            #print(ex)
+            # from chatgpt
+            traceback.print_exc()  # This will print the entire traceback
 
     def run_one_worker(self, worker_num):
         self.run(worker_num)
@@ -222,9 +227,11 @@ class GameRunner:
         return ls.index(max(ls))
 
     def eval_single_genome(self, worker_num, genome_list):
+        print('Starting eval_single_genome')
         result = set()
         temp_result = set()
         for state in self.level_states:
+            print('Inside for loop #1')
             #env = retro.make(game='SuperMarioBros-Nes', state=state)
 
             env = gym_super_mario_bros.make(state)
@@ -232,6 +239,7 @@ class GameRunner:
 
             #env.action_space.sample()
             for genome_id, genome in genome_list:
+                print('Inside for loop #2')
 
                 obs = env.reset()
                 env.action_space.sample()
@@ -250,6 +258,7 @@ class GameRunner:
                 done = False
 
                 while not done:
+                    #print('Not  done')
 
                     if self.show_game:
                         env.render()
@@ -295,20 +304,31 @@ class GameRunner:
                     if done or frame_counter == max_frames:
                         done = True
 
-                    genome.fitness = fitness_current
+                    #genome.fitness = fitness_current
+                    #Bug fix provided by chatgpt
+                    genome.fitness = int(fitness_current)
+                    #print('!!!!!!!!!!!!!')
+                    #print(f"Genome {genome_id} Final Fitness: {genome.fitness}")
+                    #print('!!!!!!!!!!!!!')
                 temp_result.add((genome_id, genome, fitness_current, state))
             env.close()
+            print('Ending for loop #2')
 
         for genome_id, genome in genome_list:
+            print('Generating result')
             id_results = [elem for elem in temp_result if elem[0] == genome_id]
             result.add((genome_id, genome, sum([elem[2] for elem in id_results])))
+            print('Finished generating result')
 
+        print('Finished eval_single_genome')
+        print('Result: ')
+        print(result)
         return result
-
 
     def run(self, worker_num):
 
         def eval_genomes(genomes, config):
+            print('starting eval_genomes')
             split_genomes = np.array_split(genomes, self.num_threads)
             p = Pool(processes=self.num_threads)
             genome_results = p.starmap(self.eval_single_genome, [[i, (split_genomes[i])] for i in range(0, self.num_threads)])
@@ -320,13 +340,20 @@ class GameRunner:
             #print(genome_result_dict)
 
             for genome_id, genome in genomes:
-                genome.fitness = genome_result_dict[genome_id][1]
+                #genome.fitness = genome_result_dict[genome_id][1]
+                #Bug fix provided by chatgpt
+                genome.fitness = int(genome_result_dict[genome_id][1])
+                print('~~~~~~~~~~~~~~~~~~~~~~~~~')
+                print(f"Genome {genome_id} Fitness: {genome.fitness}")
+                print('~~~~~~~~~~~~~~~~~~~~~~~~~')
 
             current_time_seconds = time.time_ns() // 1_000_000_000
             if current_time_seconds - self.start_time_seconds >= self.max_runtime and self.max_runtime != 0:
                 print('Maximum run time exceeded. Exiting now.')
                 raise SystemExit
+            print('finishing eval_genomes')
 
+        print('creating config')
         config = neat.Config(
             neat.DefaultGenome,
             neat.DefaultReproduction,
@@ -334,11 +361,15 @@ class GameRunner:
             neat.DefaultStagnation,
             self.config_file_name
         )
+
         self.config = config
+        print('config created')
 
         #Load population checkpoint if one exists
+        print('Looking for existing checkpoint')
         latest_checkpoint = self._get_latest_checkpoint(worker_num)
         if latest_checkpoint:
+            print('Checkpoint found')
             pickle_file = latest_checkpoint
 
             #Update the generation because the implementation in neat-python has a bug
@@ -359,32 +390,38 @@ class GameRunner:
             p = neat.Population(config)
             print('No population checkpoint found, creating new population.')
 
+        print('About to add reporter')
         # Show reporting statistics
         p.add_reporter(neat.StdOutReporter(True))
+        print('Added StdOutReporter')
         stats = neat.StatisticsReporter()
         p.add_reporter(stats)
+        print('Added StatisticsReporter')
         # Create a checkpoint of the NN
+        print('Creating checkpoint filename')
         checkpoint_filename = Path('{}/{}/neat-checkpoint-'.format(self.data_folder, self.config_file_name))
+        print('Checkpoint filename: {}'.format(checkpoint_filename))
         save_dir = checkpoint_filename.parent
         save_dir.mkdir(parents=True, exist_ok=True)
         p.add_reporter(
             neat.Checkpointer(
-                generation_interval=1,
+                generation_interval=10,
                 time_interval_seconds=300,
                 filename_prefix=checkpoint_filename
             )
         )
-        print('aaa')
-        winner = p.run(eval_genomes, n=self.max_generation)
-        print('bbb')
-        '''
+        print('Added neat.Checkpointer')
+
+        print('Starting p.run')
+        winner = p.run(eval_genomes, n=self.max_generation)  # THIS IS WHERE THE ERROR IS!!!
+        print('Finished p.run')
+
         #Save the winner
         pickle_name = Path('{}/{}/complete_models/winner.pkl'.format(self.data_folder, self.config_file_name))
         pickle_dir = pickle_name.parent
         pickle_dir.mkdir(parents=True, exist_ok=True)
         with open(pickle_name, 'wb') as output:
             pickle.dump(winner, output, 1)
-        '''
 
 
     #helper functions
