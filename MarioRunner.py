@@ -328,7 +328,7 @@ class GameRunner:
     def run(self, worker_num):
 
         def eval_genomes(genomes, config):
-            print('starting eval_genomes')
+            #print('starting eval_genomes')
             split_genomes = np.array_split(genomes, self.num_threads)
             p = Pool(processes=self.num_threads)
             genome_results = p.starmap(self.eval_single_genome, [[i, (split_genomes[i])] for i in range(0, self.num_threads)])
@@ -343,15 +343,15 @@ class GameRunner:
                 #genome.fitness = genome_result_dict[genome_id][1]
                 #Bug fix provided by chatgpt
                 genome.fitness = int(genome_result_dict[genome_id][1])
-                print('~~~~~~~~~~~~~~~~~~~~~~~~~')
-                print(f"Genome {genome_id} Fitness: {genome.fitness}")
-                print('~~~~~~~~~~~~~~~~~~~~~~~~~')
+                #print('~~~~~~~~~~~~~~~~~~~~~~~~~')
+                #print(f"Genome {genome_id} Fitness: {genome.fitness}")
+                #print('~~~~~~~~~~~~~~~~~~~~~~~~~')
 
             current_time_seconds = time.time_ns() // 1_000_000_000
             if current_time_seconds - self.start_time_seconds >= self.max_runtime and self.max_runtime != 0:
                 print('Maximum run time exceeded. Exiting now.')
                 raise SystemExit
-            print('finishing eval_genomes')
+            #print('finishing eval_genomes')
 
         print('creating config')
         config = neat.Config(
