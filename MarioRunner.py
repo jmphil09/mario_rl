@@ -111,7 +111,9 @@ class GameRunner:
             top_ids = [x1 for (x1, x2) in top_genome_id_list]
             top_genomes = [(genome_id, genome) for (genome_id, genome) in genomes if genome_id in top_ids]
 
-            env = Monitor(retro.make(game='SuperMarioBros-Nes', state=state), './video/{}'.format(state), force=True)
+            #env = Monitor(retro.make(game='SuperMarioBros-Nes', state=state), './video/{}'.format(state), force=True)
+            env = gym_super_mario_bros.make(state)
+            env = JoypadSpace(env, COMPLEX_MOVEMENT)
 
             try:
                 for genome_id, genome in top_genomes:
@@ -149,6 +151,9 @@ class GameRunner:
                                 time.sleep(.001)
                                 end_ts = time.time_ns() // 1_000_000
                             env.render()
+                            # TODO: Investigate this
+                            # self.em = retro.RetroEmulator(rom_path)
+                            # https://github.com/openai/retro/blob/master/retro/retro_env.py
                             a = env.em.get_audio()
                             b = env.em.get_audio_rate()
                             thread = Thread(target=mysound.play, args=(a, b,))
