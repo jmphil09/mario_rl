@@ -16,8 +16,8 @@ PLAY_GAME = False
 DATA_FOLDER = 'v6_mariolib_test'
 CONFIG_PREFIX = 'config_{}'.format(DATA_FOLDER)
 RUN_TIME = 14400*4#7200#3600
-MAX_GENERATIONS = 10_000
-NUM_THREADS = 32
+MAX_GENERATIONS = 100#5#10_000
+NUM_THREADS = 1
 
 STATES = ['SuperMarioBros-1-2-v0']#['SuperMarioBros-1-1-v0', 'SuperMarioBros-1-2-v0']
 
