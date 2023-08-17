@@ -405,7 +405,7 @@ class GameRunner:
         save_dir.mkdir(parents=True, exist_ok=True)
         p.add_reporter(
             neat.Checkpointer(
-                generation_interval=10,
+                generation_interval=1,
                 time_interval_seconds=300,
                 filename_prefix=checkpoint_filename
             )
