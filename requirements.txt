@@ -12,7 +12,7 @@ mkl-service==2.3.0
 neat==0.4.1
 neat-python==0.92
 nes-py==8.1.4
-numpy==1.19.1
+numpy==1.22.0
 pyglet==1.5.7
 pyparsing==2.4.7
 python-dateutil==2.8.1
