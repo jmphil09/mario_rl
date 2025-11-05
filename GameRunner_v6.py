@@ -291,6 +291,8 @@ class GameRunner:
             id_results = [elem for elem in temp_result if elem[0] == genome_id]
             result.add((genome_id, genome, sum([elem[2] for elem in id_results])))
 
+        print('Result: ')
+        print(result)
         return result
 
 

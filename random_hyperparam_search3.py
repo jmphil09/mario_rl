@@ -1,0 +1,65 @@
+import os
+import pickle
+import time
+
+from pathlib import Path
+from shutil import copyfile, rmtree
+
+from ConfigGenerator import ConfigGenerator
+from GameRunner import GameRunner
+
+N = 48
+M = 10
+
+DATA_FOLDER_NAME = 'data3'
+
+
+#clear the data folder
+def clear_data_dir(dir=DATA_FOLDER_NAME):
+    try:
+        rmtree(dir)
+    except Exception as ex:
+        print("{} directory does not exist".format(dir))
+        print(ex)
+
+
+def main():
+    try:
+        clear_data_dir(DATA_FOLDER_NAME)
+
+        #Generate a random config file
+        config = ConfigGenerator()
+        config_params = config.randomize()
+
+        #Copy the file N times
+        config.write_all_configs(0, N)
+
+        #Run N workers for M generations
+        runner = GameRunner(num_threads=N, show_game=False, max_generation=M, data_folder=DATA_FOLDER_NAME)
+        runner.run_all_threads()
+
+        #After all workers are finished, move the fitness list files to a data directory
+        timestamp = str(time.time()).split('.')[0]
+        config_path = Path('config')
+        config_destination_path = Path('hyperparam_data/{}/{}/config'.format(DATA_FOLDER_NAME, timestamp))
+        os.makedirs(os.path.dirname(config_destination_path), exist_ok=True)
+        copyfile(config_path, config_destination_path)
+        with open(Path(str(config_destination_path) + '_params'), 'wb') as config_param_path:
+            pickle.dump(config_params, config_param_path, 1)
+        for n in range(N):
+            src_path = Path('{}/config_{}/worker-{}-fitness_list.pkl'.format(DATA_FOLDER_NAME, n, n))
+            destination_path = Path('hyperparam_data/{}/worker-{}-fitness_list.pkl'.format(timestamp, n))
+            copyfile(src_path, destination_path)
+
+        clear_data_dir(DATA_FOLDER_NAME)
+    except Exception as ex:
+        print(ex)
+        return
+
+
+if __name__ == '__main__':
+    for n in range(2):
+        try:
+            main()
+        except Exception as ex:
+            print(ex)

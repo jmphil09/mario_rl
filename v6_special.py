@@ -9,16 +9,16 @@ NUM_CORES = 32 #can use 1, 2, 4, 8, 16, 32, 48, 64, 96, 192 with maximum efficie
 
 run_counter = 0
 RUN = True
-CLEAN_AND_PLAY = False
+CLEAN_AND_PLAY = False #True
 while run_counter < RUN_CYCLES and RUN:
     run_counter += 1
 
-    #completed_levels = [1, 4]
+    completed_levels = []#[1, 2, 3, 5, 6, 7, 8]  # [4]
     levels_to_run = list(range(1, 9))
-    #for n in completed_levels:
-    #    levels_to_run.remove(n)
+    for n in completed_levels:
+        levels_to_run.remove(n)
 
-    #levels_to_run = [1,2,4,5,6,7,8] # Use this to manually select 1-2 levels when they are close to being done
+    #levels_to_run = [8] # Use this to manually select 1-2 levels when they are close to being done
     for n in levels_to_run:
         RUN_TRAINING = True
         PLOT_RESULTS = False
