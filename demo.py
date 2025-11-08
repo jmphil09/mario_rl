@@ -4,16 +4,16 @@ from FitnessPlot_v6 import FitnessPlot
 
 
 RUN_TRAINING = True
-#RUN_TRAINING = False
+RUN_TRAINING = False
 
 PLOT_RESULTS = True
-#PLOT_RESULTS = False
+PLOT_RESULTS = False
 
 PLAY_GAME = True
 #PLAY_GAME = False
 
 
-DATA_FOLDER = 'v6_mariolib_test_new'
+DATA_FOLDER = 'v6_level1-1'
 CONFIG_PREFIX = 'config_{}'.format(DATA_FOLDER)
 RUN_TIME = 14400*4#7200#3600
 MAX_GENERATIONS = 100#5#10_000
