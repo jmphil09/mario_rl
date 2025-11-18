@@ -22,3 +22,15 @@ six==1.15.0
 tornado==6.0.4
 tqdm==4.48.2
 WebOb==1.8.6
+cloudpickle==3.1.2
+Farama-Notifications==0.0.4
+flake8==6.0.0
+gymnasium==1.2.2
+mccabe==0.7.0
+numpy==2.2.6
+pycodestyle==2.10.0
+pyflakes==3.0.1
+pyglet==1.5.31
+simpleaudio==1.0.4
+stable-retro==0.9.5
+typing_extensions==4.15.0
