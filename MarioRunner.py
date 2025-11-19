@@ -3,12 +3,24 @@ TODO:
 - add states for remaining levels
 - set up neat python (newer version 1.0.0)
 '''
+import cv2
+import glob
+import gzip
+import neat
+import pickle
 import retro
+import time
 
-# import gymnasium as gym
+import numpy as np
 import simpleaudio as sa
 
+from multiprocessing import Pool
+from pathlib import Path
 from threading import Thread
+
+
+
+
 
 
 class sound():
@@ -129,11 +141,12 @@ class MarioRunner:
             top_ids = [x1 for (x1, x2) in top_genome_id_list]
             top_genomes = [(genome_id, genome) for (genome_id, genome) in genomes if genome_id in top_ids]
 
-            env = Monitor(retro.make(game='SuperMarioBros-Nes', state=state), './video/{}'.format(state), force=True)
+            #env = Monitor(retro.make(game='SuperMarioBros-Nes', state=state), './video/{}'.format(state), force=True)
+            env = retro.make(game='SuperMarioBros-Nes', state='Level1-1.state')
 
             try:
                 for genome_id, genome in top_genomes:
-                    obs = env.reset()
+                    obs, info = env.reset()
                     env.action_space.sample()
 
                     input_x, input_y, input_colors = env.observation_space.shape
@@ -189,7 +202,8 @@ class MarioRunner:
                         nn_output = net.activate(imgarray)
                         if env.action_space.contains(nn_output):
                             if env.action_space.contains(nn_output):
-                                obs, reward, done, _ = env.step(nn_output)
+                                obs, reward, terminated, truncated, info = env.step(nn_output)
+                                #obs, reward, done, _ = env.step(nn_output)
                             else:
                                 print(f"Invalid action: {nn_output}")
                                 done = True
@@ -264,7 +278,7 @@ class MarioRunner:
 
             for genome_id, genome in genome_list:
 
-                obs = env.reset()
+                obs, info = env.reset()
 
                 input_x, input_y, input_colors = env.observation_space.shape
                 input_x = int(input_x/self.convolution_weight)
@@ -293,15 +307,24 @@ class MarioRunner:
                     imgarray = [num for row in obs for num in row]
 
                     nn_output = net.activate(imgarray)
+                    print('+++++++++++++++++++++++++++++++++++++++++')
+                    print(nn_output)
+                    print(env.action_space.sample())
+                    print('+++++++++++++++++++++++++++++++++++++++++')
+                    #env.action_space.sample()
 
-                    #nn_output = self.one_hot_encode(nn_output)
+                    nn_output = self.one_hot_encode(nn_output)
+                    # TODO: update this!!!
+                    nn_output = env.action_space.sample()
 
                     try:
                         if isinstance(nn_output, list) and all(isinstance(i, int) for i in nn_output):
-                            obs, reward, done, info = env.step(nn_output)
+                            #obs, reward, done, info = env.step(nn_output)
+                            obs, reward, terminated, truncated, info = env.step(nn_output)
                         else:
                             print(f"Invalid action: {nn_output}")
                             done = True
+                            reward = 0
                     except Exception as ex:
                         print('ERROR HERE')
                         #print(ex)
